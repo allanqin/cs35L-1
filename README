@@ -2,7 +2,7 @@
  / / / / ___/ /  / _ |   / ___/ __/ |_  // __// / 
 / /_/ / /__/ /__/ __ |  / /___\ \  _/_ </__ \/ /__
 \____/\___/____/_/ |_|  \___/___/ /____/____/____/
-		//Winter 2014
+//Winter 2014
 -------------------------------------------------------------------------------
 Contributors
 -------------------------------------------------------------------------------
@@ -11,8 +11,9 @@ Contributors
 Scores:
 -------------------------------------------------------------------------------
 	1. Getting to know your System...................100
-		For me: 30:HWORDS dictionary points 0:sameln-
-		Failed test 1  (Basic) 0:Not ignoring slinks
+		For me: 30:HWORDS dictionary points 0:
+		sameln-Failed test 1  (Basic) 0:Not ignoring
+		slinks
 
 	2. Shell scripting................................90
 
@@ -22,8 +23,8 @@ Scores:
 		For me: -1: 1d late
 
 	5. C programming and debugging....................81
-		For me: insufficient log file, wrong output for
-		large file, late penalty: -4
+		For me: insufficient log file, wrong output
+		for large file, late penalty: -4
 
 	6. SSH setup and use in applications..............98
 
