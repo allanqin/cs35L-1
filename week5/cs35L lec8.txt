@@ -1,0 +1,167 @@
+cs35L week 5 Lecture 8 February 3, 2014
+=========================================================================
+C programming and debugging
+=========================================================================
+-No classes, bools
+	-there are structs but everything is public
+		-structs can't hold methods either, only data members
+
+Pointers to functions:
+double (*funcPtr) (double, double);
+double result;
+funcPtr = pow;	// Let funcPtr point to the function pow()
+				//the expression *funcPtr now yields the function pow()
+result = (*funcPtr) (1.5, 2.0);		//call the function referenced by funcPtr
+result = funcPtr(1.5, 2.0);			//the same function call (this and above are okay)
+
+-Function pointers CAN be held in C structs, which is the only way for them to hold methods
+
+-typedefs clean code
+e.g.
+typedef std::vector<float> vecf;
+vecf b,a;	//creates two vectors of floats a and b
+
+Dynamic memory:
+-In C we use malloc(allocates) and free(releases) for dynamic memory
+
+In C++:
+new
+	-allocates
+	-calls constructor on classes
+delete
+	-releases
+	-calls destructor on classes
+	
+In C:
+malloc
+	-allocates
+	-does not call constructor
+free
+	-releases
+	-does not call destructor
+	
+Ex of malloc:
+rectangle_t *ptr = (rectangle_t*) malloc(sizeof(rectangle_t));
+		// casts the returned pointer to of type rectangle_t pointing to a memory block of
+		// size sizeof(rectangle_t)
+if (ptr == NULL)	//pointer will be NULL if malloc failed
+{
+	printf("Something went wrong in malloc.");
+	exit(-1);
+}
+else
+{
+	free(ptr);		//releases the allocated memory
+	ptr = NULL; 	//this is good programming practice to make sure we don't use this pointer again
+}
+
+-realloc resizes allocated memory
+Ex.
+ptr = (rectangle_t*) realloc(ptr, 3 * sizeof(rectangle_t));
+		//ptr now points to enough space for three rectangle_t's
+		
+ptr[1].top_left.x;
+(ptr+1)->top_left.x;	
+*(ptr+1).top_left.x;	//these three statements are equivalent. Don't mix the arrows and stars
+
+Oopening and closing files:
+Ex.
+FILE *fPtr = NULL;		//FILE is a type
+fPtr = fopen("data.txt", "w");		//r - read, w - write, a - append
+if (fPtr != NULL)
+{
+	fputs("Sample code", fPtr);		// writes "Sample code" into the file pointed at by fPtr
+	fclose(fPtr);		//closes the file
+}
+else
+{
+	printf("Something went wrong in fopen");
+	exit(-1);
+}
+		
+-stdin, stdout, stderr are of type FILE*
+
+Reading/writing characters:
+-getc(FILE *fp);			//read a character
+-putc(int c, FILE *pf);	//write a character of ASCII code 'int c' (can just use 'a' and will translate to #)
+
+Reading/writing liens:
+-char *fgets(char *buf, int n, FILE *pf);	//reads a line (n bytes from the buffer *buf)
+-int fputs(const char *s, FILE *fp);		//writes a line
+		
+Formatted input/output:
+Ex.
+int score = 120;
+char player[] = "Mary";
+printf("%s has %d points. \n, player, score);
+fscanf("%d", &score)	//reads 
+
+=========================================================================
+GDB debugging
+=========================================================================
+-Heap store dynamic memory
+-Stack stores environment variables, function calls, etc.
+
+gcc -g stackSample.c -o stack	//compiles stackSample.c with information for debugging in GDB into file stack
+
+Ex.
+b main	//sets breakpoint at main()
+r		//run
+s		//step in (go into a function)
+n		//step over (does the whole function and leaves)
+bt		//"back trace" - shows the state of the stack
+p arg	//lists the value that the variable arg stores
+p *arg	//same as above but if arg was a pointer
+c		//continue running until next breakpoint
+l		//listing
+q		//quit gdb
+
+-you can set conditional breakpoints in gdb
+
+LAB:
+-downloads coreutils with bug and unzip with tar xvf
+
+1) Reproduce the bug
+
+To build:
+./configure CFLAGS="-g -O0" //"Oh zero at the end"
+make -j 4	(Will fail before patch)
+
+wget the patch URL
+
+patch -p0 < coreutils.diff	//to apply the patch (coreutils.diff in top folder)
+
+Make the touch files in a temp directory (cd /tmp/)
+	touch -d '1918-11-11 11:00 GMT' /tmp/wwi-armistice
+	touch /tmp/now
+	touch /tmp/now1
+	
+Then sleep 5
+./ls -lt /tmp/now /tmp/now1 /tmp/wwi-armistice 	(will see that wwi-armisitice is "in the future") ->newest files at the top
+	//run just ls without ./ and you will see the correct behavior
+
+-The bug is having to do with the filing sorting
+-Put a breakpoint at the function sort_files(void) and start debugging in there
+	`b sort_files`
+-know what's happening in qsort
+
+Try these to see contents of file:
+p files
+p *files
+p files[0]	//these are the three files we made and were sent into qsort
+p files[1]
+pfiles [2]
+
+-look at the st_mtim timestamp in the metadata for each file
+
+UNIX time stamps:
+Unix epohc time: Jan 1 1970 00:00 hrs
+-the st_mtim shows the seconds before or after the UNIX epoch time (negative - before, positive - after)
+-ctime - file status changes (e.g. when last permissions changed)
+-mtime - file contents modified (worry about this one in the lab)
+-atime - file accesses (when last accessed)
+
+ls -lt //long listing with sorting by modified time (-t flag)
+
+-the key to the lab is something is weird in the compare function in the qsort used
+-bug is related to integer overflow

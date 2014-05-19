@@ -1,0 +1,92 @@
+cs35L week 4 lec 6 January 27, 2014
+=======================================================
+Change management / Git
+=======================================================
+-Source control keeps track of changes to software files
+
+-local SCS: keep changes only on your computer
+-centralized SCS: changes kept in a central server. Can checkout things from the server 
+ and checkin things to the server
+	-disadvantage is that server must always be on if people are using it
+-distributed SCS: like a combination of local and centralized. Users can also communicate with each
+ other without the central server.
+
+ Example:
+ ----------
+ git init			//creates a repository
+ ls -a				//show the git
+ git status			//shows which files are modified
+ git add + git command	//commit
+ git checkout			//checkout
+
+ //suppose ls has car.cpp, car.h, main.cpp, Makefil
+ git add *			// add all files
+ git commit -m 'This is the first commit'
+ git branch			//points to the latest commit
+ git log			//shows the history of the commits
+				//Each commit has a unique identifier created by a hash function
+				// git status tells you what was modified	
+-modify main.cpp here-
+git add main.cpp
+git commit -m 'Added another hello world'
+			//the master branch points at the latest commit
+git log 	//will now show two commits
+			//commit command commits changes to a file into the repository
+-modify car.cpp here-
+git status		//will show that car.cpp was modified
+git add car.cpp
+git commit -m 'Modified message in car'
+			//in git you have to add and then commit
+git log		//find an old version's hash identifier
+git checkout <hash code> -n newbranch	//switched back to a previous version to a new working directory
+git log		//will now only show one commit history (since old branch)
+git branch	//shows branches in the repository (* indicates current branch)
+			//`git checkout master` would switch back to the master branch
+git checkout newbranch		//switch back to old version
+git log		//shows old version's commits
+-change main.cpp in newbranch-
+git commit -a -m 'Applied a new line cout'	//adds and commits with the -a option included with -m
+-change car.h here-
+git diff	// looks at all files in working copy and compares it with the newest files in the repository
+			// and shows you what was changed.
+			//good idea to do before committing
+git log		//will show updated commits
+		//HEAD commit is the latest commit in the branch
+git show <hash value>	// will show what changes were made in that commit
+git diff HEAD car.h	//compare working file with HEAD commit
+git diff HEAD^ car.h	//compares to the previous commit above HEAD
+git diff HEAD^^ car.h	//compares to two parents above the HEAD commit
+	-equivalent to git diff HEAD~2 car.h	//HEAD~x is x parents up
+git checkout -- car.h	// reverts all changes in working copy and restores to HEAD commit
+git tag -a v1.1 -m 'Version 1.1'	// can now refer to latest commit as v1.1 instead of the hash
+git tag			//shows all the tags
+		//now can do git checkout v1.1 to the commit tied to that tag
+
+		
+LAB steps:
+//Need to add the PATH thing for this lab to work
+-git log > git-log.txt
+-git tag > git-tags.txt
+-in git log, use /<searchterm> to find things in the log
+	-or can just search in git-log.txt and find the phrases in there
+	-find the hash
+-git show <hash number> //hash number is 62xxxx
+-git show <hash number> > quote-patch.txt
+-git checkout v3.0 -b mybranch	//switch to new branch
+-patch -p1 < quote-patch.txt	//-p gets rid of path name up to the n'th slash to see where to patch
+-press Enter if not a .c file to skip those patches
+
+-in emacs we will have to revert all changes to files that aren't .c files. In those .c files, we will
+ have to revert any changes to non c-character strings (i.e. change back ' to ` in comments) (may require
+ changes by hand)
+ -look at rejected files and copy patches into .c files by hand
+
+To build:
+./bootstrap
+./configure
+make
+-after building software, go inside src and use ./diff --help and ./diff . -
+
+//find something in ACM TechNews for a presentation topic
+//highlight with left click to copy and right click to paste 
+ 

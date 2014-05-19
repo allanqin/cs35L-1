@@ -1,0 +1,27 @@
+--- exer1.html	2014-01-07 22:18:47.308703519 -0800
++++ exer3.html	2014-01-07 22:30:41.764682403 -0800
+@@ -3,13 +3,13 @@
+ 	"http://www.w3.org/TR/html4/strict.dtd">
+ <html>
+ <head>
+-<meta http-equiv='Content-Type' content='text/html;charset=UTF-8'>
+-<title>Assignment 1. Getting to know your system</title>
++<meta http-equiv='Content-Type' content='text/html;charset=US-ASCII'>
++<title>Assignment 35. Getting to know your system</title>
+ </head>
+ 
+ <body>
+ 
+-<h1>Assignment 1. Getting to know your system</h1>
++<h1>Assignment 35. Getting to know your system</h1>
+ 
+ <h2>Laboratory: Linux and Emacs scavenger hunt</h2>
+ 
+@@ -26,6 +26,7 @@
+ assignment.
+ 
+ <ol>
++
+ <li>
+ How can you get <samp>man</samp> to print all the commands that have a specific
+ word in their man page (or at least the description part of the

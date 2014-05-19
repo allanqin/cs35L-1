@@ -1,0 +1,98 @@
+cs35L week 9 lec 17 / 18
+====================================================================================
+Multithreading / Parallel threads
+====================================================================================
+-A single core can simulate multiprocessing by switching between processes quickly
+-true parallelism is actually utilizing parallel cores concurrently
+
+Ex. When you did tr -s '[:space:]' '\n' | sort -u | comm -23 - words, tr, sort, and 
+	comm ran at the same time
+	-works because there are buffers in between the processes where the pipes are
+	
+-Within a process, things can be run in parallel too - threads
+	-threads share the process's data. Else, each thread gets its own stack and registers.
+	-a thread is a "subprocess" of a process
+	
+-A master thread creates the other worker threads and waits for the to finish using fork()
+(create thread) and join() (join thread)
+	-need the join() function because if the master thread finishes before its workers,
+	then all the worker threads wil be killed once main finishes
+	-pthread_join blocks until the threadID passed in finishes then returns
+	-the second argument in pthread_join is the return value of the thread function if it has one
+		-the argument for pthread_exit is the return value for that instance of the thread function
+
+-compile using -lpthread option at the end
+-The OS scheduler deterines when which threads are run. You won't know which order so you
+must synchronize them.
+
+-thread switching has less overhead than process switches
+	-if you create too many threads for too few cores, you'd have too much overhead for improvements
+	
+-One way to synchronize threads is to use a mutex
+	-mutex.lock() and mutex.unlock()
+		-one thread locks the dependency and unlocks it when its done (i.e. a shared variable)
+	
+LAB:
+-generate some random bits and store in a file
+-sort using different parallelization options and time and record the results (see slides)
+	-without the parallel option, sort is multithreaded by default
+-if you aren't getting speedups, add more random numbers to your file and try again
+-must run the sort in /usr/local/cs/bin (have it in your $PATH)
+
+Homework Ray Tracing:
+Overview:
+-generates very high quality images by tracing path of light depending on a scene and light sources
+-very popular in computer graphics
+-computer graphics: from models to images
+-each thread tracing a single ray can be run in parallel since then have nothing to do with each other
+	-"embarrassingly parallel" - threads don't need to be synchronized
+
+Tips:
+-add -lpthread to LDLIBS in Makefile
+-Only have to add code to main.c to make the ray tracer run in parallel
+	-delete the part that prevents multithreading (the if n != 1 {...})
+	
+-FIRST THING TO DO:	decouple the printing from the rest of the code
+-4 nested loops
+	-outer loop goes over columns
+	-second loop goes over rows
+	-outer two loops: give an RGB value to each pixel
+	*after the outer two loops, each pixel has a color*
+	-inner two for loops: antialiases the edges in the image (lines look smoother)
+		-splits each pixel into subpixels and ray traces those subpixels, then averages
+		those subpixel RGB values to get the final RGB value of the actual pixel
+		
+-trace function says given the &scene and a &pixel_ray, give the RGB value there
+	-don't worry about the last argument, just use 0
+	
+-Make srt. Then run ./srt and pipe the output out to a .ppm file
+e.g.	./srt 1 > 1thread.ppm
+
+-Assume width and height are powers of 2 above 128.
+	-subdivide each pixel for thread arguments 1, 2, 4, 8
+Ex. Since outer loops goes over columns, divide total cols into 4 and give section to each of 4 threads
+
+-Must wait for all threads to finish before the printf() executes. So take the print out of the for loops
+and once all threads are done, have another two for loops to interate through all pixels and loop again.
+	-somehow store the RGB values calculated into some data structure so you can remember them for printing
+	later (see vec3 in phone picture) - make the Vec3 *img; a global variable, as well as scene_t
+-The thread function should then contain the four for loops
+	-send in where to start and end the loops by passing in an argument to pthreads
+		-to pass in multiple arguments, create a struct to hold more than one argument and pass in a pointer
+		to that structure (make a struct that holds int start, int end so thread knows where in image to work on)
+	-keep two for loops for print in the main function
+	
+-Vec3 is a struct that's basically float[3]
+e.g. Vec3 color;
+	 color[0] = R value
+	 color[1] = G value
+	 color[2] = B value
+	 
+Approximate benchmarks after multithreading:
+Threads		Seconds	 
+1 			45
+2 			30
+4 			20
+8 			10
+
+-Once finished, run the command `make check` to see performance differences 

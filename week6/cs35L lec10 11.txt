@@ -1,0 +1,59 @@
+cs35L week 6 lec 10 & 11
+================================================================================
+SSH / Digital signatures
+================================================================================
+Lab steps:
+As server:
+1) ssh-keygen (generate pub/private key pair)
+2) sudo useradd -d /home/<homedir_name> -m <username> (create user's directory)
+3) sudo passwd <username> (create user's password)
+4) cd /home/<homedir_name> (create .ssh directory for new user)
+   sudo mkdir .ssh
+5) sudo chown -R <username> .ssh (give new user ownership and appropriate permissions)
+   sudo chmod 700 .ssh
+
+As client:
+1) ssh-keygen
+2) ssh-copy-id -i <pubkeyfile> -i <username>@server_ip_address (copy public key to server
+		 for keybased authentication)
+3) ssh-add <privatekeyfile> (add private key to authentication agent)
+4) ssh <username>@server_ip_address (ssh into server)
+5) ssh -X <username@server-ip_address (X session forwarding for GUI elements)
+	-then try running things like xterm, gedit, firefox
+
+/*
+ssh-add is pasphraseless method
+password is regular login first time
+ssh-add -D to do password login (will still ask for passphrase)
+*/
+
+Host/client validation:
+To verify we are communicating to who we think we are, we use the server's public key to encrpy a message.
+The server then decrypts it and encodes it with our public key. We then decrypt it and see if it was the 
+message we sent them originally.
+
+Asymmetric - host/client validation
+
+Symmetric - encrypts the channel with a single private key
+
+Digital signature protects the integrity of the documents, not necessarily the privacy of the contents
+
+Hot to generate hashes for files:
+-use `md5sum <file>`
+
+Digital signature:
+1) create a message digest using a hash function. 
+2) encrypt message digest with our private key send original and message digest to other person
+3) other person decrypts our message digest with our public key and compares the result with the
+	original document we sent. If there are no differences, the document has retained its integrity
+-this verifies the integrity of the document
+-doesn't prove origin of file though since the encrypted message digest can be decrypted and re-encrypted
+ by a third party and sent again.
+ -need a third party to prove origin (e.g. Verisign)
+ 
+ Homework: 
+ -Use gpg to sign and verify documents
+ -a detatched signature sends the encrypted message digest separately from the original document
+ -just answer the questions with logical arguments
+	-for example, consider that monitoring the keystrokes of a user allows their passphrases to be known
+		-a USB can store the actual public and private keys of a person

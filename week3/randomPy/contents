@@ -1,0 +1,9 @@
+total 24
+1081155 drwx------ 2 stanway stanway 4096 Jan 25 22:31 .
+1081123 drwx------ 4 stanway stanway 4096 Jan 25 22:27 ..
+1065471 -rw-rw-r-- 1 stanway stanway    0 Jan 25 22:31 contents
+ 925828 -rw-rw-r-- 1 stanway stanway    0 Jan 25 13:03 empty
+ 934218 -rw-rw-r-- 1 stanway stanway   41 Jan 25 14:21 lala
+1081108 -rwxr-xr-x 1 stanway stanway 2122 Jan 25 15:28 oldrandline.py
+1081120 -rwxrwxr-x 1 stanway stanway 2837 Jan 25 17:42 randline.py
+ 934356 -rw-rw-r-- 1 stanway stanway  945 Jan 25 15:30 TODOrandline

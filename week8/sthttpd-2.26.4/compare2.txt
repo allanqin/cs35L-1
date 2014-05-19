@@ -1,0 +1,4634 @@
+--- thttpd-nostackprot.s	2014-02-24 18:03:30.000000000 -0800
++++ thttpd-stackprot.s	2014-02-24 18:03:42.000000000 -0800
+@@ -123,19 +123,19 @@
+ 	subl	$40, %esp
+ 	call	__errno_location
+ 	movl	(%eax), %eax
+-	movl	%eax, -12(%ebp)
++	movl	%eax, -16(%ebp)
+ .L10:
+ 	movl	$1, 8(%esp)
+ 	leal	-20(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+ 	movl	$-1, (%esp)
+ 	call	waitpid
+-	movl	%eax, -16(%ebp)
+-	cmpl	$0, -16(%ebp)
++	movl	%eax, -12(%ebp)
++	cmpl	$0, -12(%ebp)
+ 	jne	.L3
+ 	jmp	.L4
+ .L3:
+-	cmpl	$0, -16(%ebp)
++	cmpl	$0, -12(%ebp)
+ 	jns	.L5
+ 	call	__errno_location
+ 	movl	(%eax), %eax
+@@ -177,7 +177,7 @@
+ 	jmp	.L10
+ .L4:
+ 	call	__errno_location
+-	movl	-12(%ebp), %edx
++	movl	-16(%ebp), %edx
+ 	movl	%edx, (%eax)
+ 	leave
+ 	.cfi_restore 5
+@@ -479,50 +479,55 @@
+ 	.cfi_offset 7, -12
+ 	.cfi_offset 6, -16
+ 	.cfi_offset 3, -20
+-	movl	$32767, 4536(%esp)
+-	movl	$32767, 4532(%esp)
+ 	movl	12(%ebp), %eax
++	movl	%eax, 124(%esp)
++	movl	%gs:20, %eax
++	movl	%eax, 4540(%esp)
++	xorl	%eax, %eax
++	movl	$32767, 140(%esp)
++	movl	$32767, 144(%esp)
++	movl	124(%esp), %eax
+ 	movl	(%eax), %eax
+ 	movl	%eax, argv0
+ 	movl	argv0, %eax
+ 	movl	$47, 4(%esp)
+ 	movl	%eax, (%esp)
+ 	call	strrchr
+-	movl	%eax, 4540(%esp)
+-	cmpl	$0, 4540(%esp)
++	movl	%eax, 136(%esp)
++	cmpl	$0, 136(%esp)
+ 	je	.L23
+-	addl	$1, 4540(%esp)
++	addl	$1, 136(%esp)
+ 	jmp	.L24
+ .L23:
+ 	movl	argv0, %eax
+-	movl	%eax, 4540(%esp)
++	movl	%eax, 136(%esp)
+ .L24:
+ 	movl	$24, 8(%esp)
+ 	movl	$9, 4(%esp)
+-	movl	4540(%esp), %eax
++	movl	136(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	openlog
+-	movl	12(%ebp), %eax
++	movl	124(%esp), %eax
+ 	movl	%eax, 4(%esp)
+ 	movl	8(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	parse_args
+ 	call	tzset
+-	leal	140(%esp), %eax
++	leal	132(%esp), %eax
+ 	movl	%eax, 20(%esp)
+ 	movl	$128, 16(%esp)
+-	leal	148(%esp), %eax
++	leal	312(%esp), %eax
+ 	movl	%eax, 12(%esp)
+-	leal	144(%esp), %eax
++	leal	128(%esp), %eax
+ 	movl	%eax, 8(%esp)
+ 	movl	$128, 4(%esp)
+-	leal	276(%esp), %eax
++	leal	184(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	lookup_hostname
+-	movl	144(%esp), %eax
++	movl	128(%esp), %eax
+ 	testl	%eax, %eax
+ 	jne	.L25
+-	movl	140(%esp), %eax
++	movl	132(%esp), %eax
+ 	testl	%eax, %eax
+ 	jne	.L25
+ 	movl	$.LC8, 4(%esp)
+@@ -553,8 +558,8 @@
+ 	movl	user, %eax
+ 	movl	%eax, (%esp)
+ 	call	getpwnam
+-	movl	%eax, 4520(%esp)
+-	cmpl	$0, 4520(%esp)
++	movl	%eax, 156(%esp)
++	cmpl	$0, 156(%esp)
+ 	jne	.L28
+ 	movl	user, %eax
+ 	movl	%eax, 8(%esp)
+@@ -572,12 +577,12 @@
+ 	movl	$1, (%esp)
+ 	call	exit
+ .L28:
+-	movl	4520(%esp), %eax
++	movl	156(%esp), %eax
+ 	movl	8(%eax), %eax
+-	movl	%eax, 4536(%esp)
+-	movl	4520(%esp), %eax
++	movl	%eax, 140(%esp)
++	movl	156(%esp), %eax
+ 	movl	12(%eax), %eax
+-	movl	%eax, 4532(%esp)
++	movl	%eax, 144(%esp)
+ .L27:
+ 	movl	logfile, %eax
+ 	testl	%eax, %eax
+@@ -589,7 +594,7 @@
+ 	testl	%eax, %eax
+ 	jne	.L30
+ 	movl	$1, no_log
+-	movl	$0, 4528(%esp)
++	movl	$0, 148(%esp)
+ 	jmp	.L35
+ .L30:
+ 	movl	logfile, %eax
+@@ -599,15 +604,15 @@
+ 	testl	%eax, %eax
+ 	jne	.L32
+ 	movl	stdout, %eax
+-	movl	%eax, 4528(%esp)
++	movl	%eax, 148(%esp)
+ 	jmp	.L35
+ .L32:
+ 	movl	logfile, %eax
+ 	movl	$.LC6, 4(%esp)
+ 	movl	%eax, (%esp)
+ 	call	fopen
+-	movl	%eax, 4528(%esp)
+-	cmpl	$0, 4528(%esp)
++	movl	%eax, 148(%esp)
++	cmpl	$0, 148(%esp)
+ 	jne	.L33
+ 	movl	logfile, %eax
+ 	movl	%eax, 8(%esp)
+@@ -634,7 +639,7 @@
+ 	movl	%eax, (%esp)
+ 	call	fprintf
+ .L34:
+-	movl	4528(%esp), %eax
++	movl	148(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	fileno
+ 	movl	$1, 8(%esp)
+@@ -644,12 +649,12 @@
+ 	call	getuid
+ 	testl	%eax, %eax
+ 	jne	.L35
+-	movl	4528(%esp), %eax
++	movl	148(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	fileno
+-	movl	4532(%esp), %edx
++	movl	144(%esp), %edx
+ 	movl	%edx, 8(%esp)
+-	movl	4536(%esp), %edx
++	movl	140(%esp), %edx
+ 	movl	%edx, 4(%esp)
+ 	movl	%eax, (%esp)
+ 	call	fchown
+@@ -662,7 +667,7 @@
+ 	call	perror
+ 	jmp	.L35
+ .L29:
+-	movl	$0, 4528(%esp)
++	movl	$0, 148(%esp)
+ .L35:
+ 	movl	dir, %eax
+ 	testl	%eax, %eax
+@@ -681,17 +686,17 @@
+ 	call	exit
+ .L36:
+ 	movl	$4096, 4(%esp)
+-	leal	407(%esp), %eax
++	leal	443(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	getcwd
+-	leal	407(%esp), %eax
++	leal	443(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strlen
+ 	subl	$1, %eax
+-	movzbl	407(%esp,%eax), %eax
++	movzbl	443(%esp,%eax), %eax
+ 	cmpb	$47, %al
+ 	je	.L37
+-	leal	407(%esp), %eax
++	leal	443(%esp), %eax
+ 	movl	$-1, %ecx
+ 	movl	%eax, %edx
+ 	movl	$0, %eax
+@@ -700,7 +705,7 @@
+ 	movl	%ecx, %eax
+ 	notl	%eax
+ 	leal	-1(%eax), %edx
+-	leal	407(%esp), %eax
++	leal	443(%esp), %eax
+ 	addl	%edx, %eax
+ 	movw	$47, (%eax)
+ .L37:
+@@ -711,7 +716,7 @@
+ 	movl	%eax, (%esp)
+ 	call	fclose
+ 	movl	stdout, %eax
+-	cmpl	%eax, 4528(%esp)
++	cmpl	%eax, 148(%esp)
+ 	je	.L39
+ 	movl	stdout, %eax
+ 	movl	%eax, (%esp)
+@@ -740,8 +745,8 @@
+ 	movl	$.LC21, 4(%esp)
+ 	movl	%eax, (%esp)
+ 	call	fopen
+-	movl	%eax, 4516(%esp)
+-	cmpl	$0, 4516(%esp)
++	movl	%eax, 160(%esp)
++	cmpl	$0, 160(%esp)
+ 	jne	.L42
+ 	movl	pidfile, %eax
+ 	movl	%eax, 8(%esp)
+@@ -754,10 +759,10 @@
+ 	call	getpid
+ 	movl	%eax, 8(%esp)
+ 	movl	$.LC22, 4(%esp)
+-	movl	4516(%esp), %eax
++	movl	160(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	fprintf
+-	movl	4516(%esp), %eax
++	movl	160(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	fclose
+ .L41:
+@@ -778,7 +783,7 @@
+ 	movl	do_chroot, %eax
+ 	testl	%eax, %eax
+ 	je	.L44
+-	leal	407(%esp), %eax
++	leal	443(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	chroot
+ 	testl	%eax, %eax
+@@ -800,19 +805,19 @@
+ 	call	strcmp
+ 	testl	%eax, %eax
+ 	je	.L46
+-	leal	407(%esp), %eax
++	leal	443(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strlen
+ 	movl	logfile, %edx
+ 	movl	%eax, 8(%esp)
+-	leal	407(%esp), %eax
++	leal	443(%esp), %eax
+ 	movl	%eax, 4(%esp)
+ 	movl	%edx, (%esp)
+ 	call	strncmp
+ 	testl	%eax, %eax
+ 	jne	.L47
+ 	movl	logfile, %ebx
+-	leal	407(%esp), %eax
++	leal	443(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strlen
+ 	subl	$1, %eax
+@@ -833,9 +838,9 @@
+ 	movl	%eax, (%esp)
+ 	call	fprintf
+ .L46:
+-	leal	407(%esp), %eax
++	leal	443(%esp), %eax
+ 	movw	$47, (%eax)
+-	leal	407(%esp), %eax
++	leal	443(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	chdir
+ 	testl	%eax, %eax
+@@ -897,40 +902,40 @@
+ 	movl	no_empty_referers, %esi
+ 	movl	local_pattern, %edi
+ 	movl	url_pattern, %eax
+-	movl	%eax, 124(%esp)
+-	movl	do_global_passwd, %eax
+ 	movl	%eax, 120(%esp)
+-	movl	do_vhost, %eax
++	movl	do_global_passwd, %eax
+ 	movl	%eax, 116(%esp)
+-	movl	no_symlink_check, %eax
++	movl	do_vhost, %eax
+ 	movl	%eax, 112(%esp)
+-	movl	no_log, %eax
++	movl	no_symlink_check, %eax
+ 	movl	%eax, 108(%esp)
+-	movl	max_age, %eax
++	movl	no_log, %eax
+ 	movl	%eax, 104(%esp)
+-	movl	p3p, %eax
++	movl	max_age, %eax
+ 	movl	%eax, 100(%esp)
+-	movl	charset, %eax
++	movl	p3p, %eax
+ 	movl	%eax, 96(%esp)
+-	movl	cgi_limit, %eax
++	movl	charset, %eax
+ 	movl	%eax, 92(%esp)
+-	movl	cgi_pattern, %eax
++	movl	cgi_limit, %eax
+ 	movl	%eax, 88(%esp)
++	movl	cgi_pattern, %eax
++	movl	%eax, 84(%esp)
+ 	movzwl	port, %eax
+ 	movzwl	%ax, %eax
+-	movl	%eax, 84(%esp)
+-	movl	140(%esp), %eax
++	movl	%eax, 80(%esp)
++	movl	132(%esp), %eax
+ 	testl	%eax, %eax
+ 	je	.L49
+-	leal	148(%esp), %ebx
++	leal	312(%esp), %ebx
+ 	jmp	.L50
+ .L49:
+ 	movl	$0, %ebx
+ .L50:
+-	movl	144(%esp), %eax
++	movl	128(%esp), %eax
+ 	testl	%eax, %eax
+ 	je	.L51
+-	leal	276(%esp), %edx
++	leal	184(%esp), %edx
+ 	jmp	.L52
+ .L51:
+ 	movl	$0, %edx
+@@ -938,31 +943,31 @@
+ 	movl	hostname, %ecx
+ 	movl	%esi, 68(%esp)
+ 	movl	%edi, 64(%esp)
+-	movl	124(%esp), %eax
+-	movl	%eax, 60(%esp)
+ 	movl	120(%esp), %eax
+-	movl	%eax, 56(%esp)
++	movl	%eax, 60(%esp)
+ 	movl	116(%esp), %eax
+-	movl	%eax, 52(%esp)
++	movl	%eax, 56(%esp)
+ 	movl	112(%esp), %eax
++	movl	%eax, 52(%esp)
++	movl	108(%esp), %eax
+ 	movl	%eax, 48(%esp)
+-	movl	4528(%esp), %eax
++	movl	148(%esp), %eax
+ 	movl	%eax, 44(%esp)
+-	movl	108(%esp), %eax
++	movl	104(%esp), %eax
+ 	movl	%eax, 40(%esp)
+-	leal	407(%esp), %eax
++	leal	443(%esp), %eax
+ 	movl	%eax, 36(%esp)
+-	movl	104(%esp), %eax
+-	movl	%eax, 32(%esp)
+ 	movl	100(%esp), %eax
+-	movl	%eax, 28(%esp)
++	movl	%eax, 32(%esp)
+ 	movl	96(%esp), %eax
+-	movl	%eax, 24(%esp)
++	movl	%eax, 28(%esp)
+ 	movl	92(%esp), %eax
+-	movl	%eax, 20(%esp)
++	movl	%eax, 24(%esp)
+ 	movl	88(%esp), %eax
+-	movl	%eax, 16(%esp)
++	movl	%eax, 20(%esp)
+ 	movl	84(%esp), %eax
++	movl	%eax, 16(%esp)
++	movl	80(%esp), %eax
+ 	movl	%eax, 12(%esp)
+ 	movl	%ebx, 8(%esp)
+ 	movl	%edx, 4(%esp)
+@@ -1060,7 +1065,7 @@
+ 	movl	$1, (%esp)
+ 	call	exit
+ .L59:
+-	movl	4532(%esp), %eax
++	movl	144(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	setgid
+ 	testl	%eax, %eax
+@@ -1072,7 +1077,7 @@
+ 	call	exit
+ .L60:
+ 	movl	user, %eax
+-	movl	4532(%esp), %edx
++	movl	144(%esp), %edx
+ 	movl	%edx, 4(%esp)
+ 	movl	%eax, (%esp)
+ 	call	initgroups
+@@ -1082,7 +1087,7 @@
+ 	movl	$4, (%esp)
+ 	call	syslog
+ .L61:
+-	movl	4536(%esp), %eax
++	movl	140(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	setuid
+ 	testl	%eax, %eax
+@@ -1118,11 +1123,11 @@
+ 	movl	$1, (%esp)
+ 	call	exit
+ .L63:
+-	movl	$0, 4524(%esp)
++	movl	$0, 152(%esp)
+ 	jmp	.L64
+ .L65:
+ 	movl	connects, %ecx
+-	movl	4524(%esp), %edx
++	movl	152(%esp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -1130,27 +1135,27 @@
+ 	addl	%ecx, %eax
+ 	movl	$0, (%eax)
+ 	movl	connects, %ecx
+-	movl	4524(%esp), %edx
++	movl	152(%esp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+ 	sall	$5, %eax
+ 	addl	%ecx, %eax
+-	movl	4524(%esp), %edx
++	movl	152(%esp), %edx
+ 	addl	$1, %edx
+ 	movl	%edx, 4(%eax)
+ 	movl	connects, %ecx
+-	movl	4524(%esp), %edx
++	movl	152(%esp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+ 	sall	$5, %eax
+ 	addl	%ecx, %eax
+ 	movl	$0, 8(%eax)
+-	addl	$1, 4524(%esp)
++	addl	$1, 152(%esp)
+ .L64:
+ 	movl	max_connects, %eax
+-	cmpl	%eax, 4524(%esp)
++	cmpl	%eax, 152(%esp)
+ 	jl	.L65
+ 	movl	connects, %ecx
+ 	movl	max_connects, %eax
+@@ -1190,7 +1195,7 @@
+ 	movl	%eax, (%esp)
+ 	call	fdwatch_add_fd
+ .L66:
+-	leal	132(%esp), %eax
++	leal	176(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	tmr_prepare_timeval
+ 	jmp	.L68
+@@ -1201,13 +1206,13 @@
+ 	call	re_open_logfile
+ 	movl	$0, got_hup
+ .L69:
+-	leal	132(%esp), %eax
++	leal	176(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	tmr_mstimeout
+ 	movl	%eax, (%esp)
+ 	call	fdwatch
+-	movl	%eax, 4512(%esp)
+-	cmpl	$0, 4512(%esp)
++	movl	%eax, 164(%esp)
++	cmpl	$0, 164(%esp)
+ 	jns	.L70
+ 	call	__errno_location
+ 	movl	(%eax), %eax
+@@ -1226,12 +1231,12 @@
+ 	movl	$1, (%esp)
+ 	call	exit
+ .L70:
+-	leal	132(%esp), %eax
++	leal	176(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	tmr_prepare_timeval
+-	cmpl	$0, 4512(%esp)
++	cmpl	$0, 164(%esp)
+ 	jne	.L73
+-	leal	132(%esp), %eax
++	leal	176(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	tmr_run
+ 	jmp	.L68
+@@ -1252,7 +1257,7 @@
+ 	movl	hs, %eax
+ 	movl	44(%eax), %eax
+ 	movl	%eax, 4(%esp)
+-	leal	132(%esp), %eax
++	leal	176(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	handle_newconnect
+ 	testl	%eax, %eax
+@@ -1275,7 +1280,7 @@
+ 	movl	hs, %eax
+ 	movl	40(%eax), %eax
+ 	movl	%eax, 4(%esp)
+-	leal	132(%esp), %eax
++	leal	176(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	handle_newconnect
+ 	testl	%eax, %eax
+@@ -1284,27 +1289,27 @@
+ .L75:
+ 	jmp	.L76
+ .L82:
+-	cmpl	$0, 4508(%esp)
++	cmpl	$0, 168(%esp)
+ 	jne	.L77
+ 	jmp	.L76
+ .L77:
+-	movl	4508(%esp), %eax
++	movl	168(%esp), %eax
+ 	movl	8(%eax), %eax
+-	movl	%eax, 4504(%esp)
+-	movl	4504(%esp), %eax
++	movl	%eax, 172(%esp)
++	movl	172(%esp), %eax
+ 	movl	448(%eax), %eax
+ 	movl	%eax, (%esp)
+ 	call	fdwatch_check_fd
+ 	testl	%eax, %eax
+ 	jne	.L78
+-	leal	132(%esp), %eax
++	leal	176(%esp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	4508(%esp), %eax
++	movl	168(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	clear_connection
+ 	jmp	.L76
+ .L78:
+-	movl	4508(%esp), %eax
++	movl	168(%esp), %eax
+ 	movl	(%eax), %eax
+ 	cmpl	$2, %eax
+ 	je	.L79
+@@ -1312,32 +1317,32 @@
+ 	je	.L80
+ 	cmpl	$1, %eax
+ 	jne	.L76
+-	leal	132(%esp), %eax
++	leal	176(%esp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	4508(%esp), %eax
++	movl	168(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	handle_read
+ 	jmp	.L76
+ .L79:
+-	leal	132(%esp), %eax
++	leal	176(%esp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	4508(%esp), %eax
++	movl	168(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	handle_send
+ 	jmp	.L76
+ .L80:
+-	leal	132(%esp), %eax
++	leal	176(%esp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	4508(%esp), %eax
++	movl	168(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	handle_linger
+ 	nop
+ .L76:
+ 	call	fdwatch_get_next_client_data
+-	movl	%eax, 4508(%esp)
+-	cmpl	$-1, 4508(%esp)
++	movl	%eax, 168(%esp)
++	cmpl	$-1, 168(%esp)
+ 	jne	.L82
+-	leal	132(%esp), %eax
++	leal	176(%esp), %eax
+ 	movl	%eax, (%esp)
+ 	call	tmr_run
+ 	movl	got_usr1, %eax
+@@ -1478,8 +1483,8 @@
+ 	movl	$.LC45, p3p
+ 	movl	$-1, max_age
+ 	movl	$1, -12(%ebp)
+-	jmp	.L87
+-.L113:
++	jmp	.L88
++.L114:
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1489,12 +1494,12 @@
+ 	movl	%eax, (%esp)
+ 	call	strcmp
+ 	testl	%eax, %eax
+-	jne	.L88
++	jne	.L89
+ 	movl	$.LC47, (%esp)
+ 	call	puts
+ 	movl	$0, (%esp)
+ 	call	exit
+-.L88:
++.L89:
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1504,11 +1509,11 @@
+ 	movl	%eax, (%esp)
+ 	call	strcmp
+ 	testl	%eax, %eax
+-	jne	.L89
++	jne	.L90
+ 	movl	-12(%ebp), %eax
+ 	addl	$1, %eax
+ 	cmpl	8(%ebp), %eax
+-	jge	.L89
++	jge	.L90
+ 	addl	$1, -12(%ebp)
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+@@ -1517,8 +1522,8 @@
+ 	movl	(%eax), %eax
+ 	movl	%eax, (%esp)
+ 	call	read_config
+-	jmp	.L90
+-.L89:
++	jmp	.L91
++.L90:
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1528,11 +1533,11 @@
+ 	movl	%eax, (%esp)
+ 	call	strcmp
+ 	testl	%eax, %eax
+-	jne	.L91
++	jne	.L92
+ 	movl	-12(%ebp), %eax
+ 	addl	$1, %eax
+ 	cmpl	8(%ebp), %eax
+-	jge	.L91
++	jge	.L92
+ 	addl	$1, -12(%ebp)
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+@@ -1542,8 +1547,8 @@
+ 	movl	%eax, (%esp)
+ 	call	atoi
+ 	movw	%ax, port
+-	jmp	.L90
+-.L91:
++	jmp	.L91
++.L92:
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1553,11 +1558,11 @@
+ 	movl	%eax, (%esp)
+ 	call	strcmp
+ 	testl	%eax, %eax
+-	jne	.L92
++	jne	.L93
+ 	movl	-12(%ebp), %eax
+ 	addl	$1, %eax
+ 	cmpl	8(%ebp), %eax
+-	jge	.L92
++	jge	.L93
+ 	addl	$1, -12(%ebp)
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+@@ -1565,8 +1570,8 @@
+ 	addl	%edx, %eax
+ 	movl	(%eax), %eax
+ 	movl	%eax, dir
+-	jmp	.L90
+-.L92:
++	jmp	.L91
++.L93:
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1576,11 +1581,11 @@
+ 	movl	%eax, (%esp)
+ 	call	strcmp
+ 	testl	%eax, %eax
+-	jne	.L93
++	jne	.L94
+ 	movl	$1, do_chroot
+ 	movl	$1, no_symlink_check
+-	jmp	.L90
+-.L93:
++	jmp	.L91
++.L94:
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1590,11 +1595,11 @@
+ 	movl	%eax, (%esp)
+ 	call	strcmp
+ 	testl	%eax, %eax
+-	jne	.L94
++	jne	.L95
+ 	movl	$0, do_chroot
+ 	movl	$0, no_symlink_check
+-	jmp	.L90
+-.L94:
++	jmp	.L91
++.L95:
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1604,11 +1609,11 @@
+ 	movl	%eax, (%esp)
+ 	call	strcmp
+ 	testl	%eax, %eax
+-	jne	.L95
++	jne	.L96
+ 	movl	-12(%ebp), %eax
+ 	addl	$1, %eax
+ 	cmpl	8(%ebp), %eax
+-	jge	.L95
++	jge	.L96
+ 	addl	$1, -12(%ebp)
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+@@ -1616,8 +1621,8 @@
+ 	addl	%edx, %eax
+ 	movl	(%eax), %eax
+ 	movl	%eax, data_dir
+-	jmp	.L90
+-.L95:
++	jmp	.L91
++.L96:
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1627,10 +1632,10 @@
+ 	movl	%eax, (%esp)
+ 	call	strcmp
+ 	testl	%eax, %eax
+-	jne	.L96
++	jne	.L97
+ 	movl	$0, no_symlink_check
+-	jmp	.L90
+-.L96:
++	jmp	.L91
++.L97:
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1640,10 +1645,10 @@
+ 	movl	%eax, (%esp)
+ 	call	strcmp
+ 	testl	%eax, %eax
+-	jne	.L97
++	jne	.L98
+ 	movl	$1, no_symlink_check
+-	jmp	.L90
+-.L97:
++	jmp	.L91
++.L98:
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1653,11 +1658,11 @@
+ 	movl	%eax, (%esp)
+ 	call	strcmp
+ 	testl	%eax, %eax
+-	jne	.L98
++	jne	.L99
+ 	movl	-12(%ebp), %eax
+ 	addl	$1, %eax
+ 	cmpl	8(%ebp), %eax
+-	jge	.L98
++	jge	.L99
+ 	addl	$1, -12(%ebp)
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+@@ -1665,8 +1670,8 @@
+ 	addl	%edx, %eax
+ 	movl	(%eax), %eax
+ 	movl	%eax, user
+-	jmp	.L90
+-.L98:
++	jmp	.L91
++.L99:
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1676,11 +1681,11 @@
+ 	movl	%eax, (%esp)
+ 	call	strcmp
+ 	testl	%eax, %eax
+-	jne	.L99
++	jne	.L100
+ 	movl	-12(%ebp), %eax
+ 	addl	$1, %eax
+ 	cmpl	8(%ebp), %eax
+-	jge	.L99
++	jge	.L100
+ 	addl	$1, -12(%ebp)
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+@@ -1688,8 +1693,8 @@
+ 	addl	%edx, %eax
+ 	movl	(%eax), %eax
+ 	movl	%eax, cgi_pattern
+-	jmp	.L90
+-.L99:
++	jmp	.L91
++.L100:
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1699,11 +1704,11 @@
+ 	movl	%eax, (%esp)
+ 	call	strcmp
+ 	testl	%eax, %eax
+-	jne	.L100
++	jne	.L101
+ 	movl	-12(%ebp), %eax
+ 	addl	$1, %eax
+ 	cmpl	8(%ebp), %eax
+-	jge	.L100
++	jge	.L101
+ 	addl	$1, -12(%ebp)
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+@@ -1711,8 +1716,8 @@
+ 	addl	%edx, %eax
+ 	movl	(%eax), %eax
+ 	movl	%eax, throttlefile
+-	jmp	.L90
+-.L100:
++	jmp	.L91
++.L101:
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1722,11 +1727,11 @@
+ 	movl	%eax, (%esp)
+ 	call	strcmp
+ 	testl	%eax, %eax
+-	jne	.L101
++	jne	.L102
+ 	movl	-12(%ebp), %eax
+ 	addl	$1, %eax
+ 	cmpl	8(%ebp), %eax
+-	jge	.L101
++	jge	.L102
+ 	addl	$1, -12(%ebp)
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+@@ -1734,8 +1739,8 @@
+ 	addl	%edx, %eax
+ 	movl	(%eax), %eax
+ 	movl	%eax, hostname
+-	jmp	.L90
+-.L101:
++	jmp	.L91
++.L102:
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1745,11 +1750,11 @@
+ 	movl	%eax, (%esp)
+ 	call	strcmp
+ 	testl	%eax, %eax
+-	jne	.L102
++	jne	.L103
+ 	movl	-12(%ebp), %eax
+ 	addl	$1, %eax
+ 	cmpl	8(%ebp), %eax
+-	jge	.L102
++	jge	.L103
+ 	addl	$1, -12(%ebp)
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+@@ -1757,8 +1762,8 @@
+ 	addl	%edx, %eax
+ 	movl	(%eax), %eax
+ 	movl	%eax, logfile
+-	jmp	.L90
+-.L102:
++	jmp	.L91
++.L103:
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1768,10 +1773,10 @@
+ 	movl	%eax, (%esp)
+ 	call	strcmp
+ 	testl	%eax, %eax
+-	jne	.L103
++	jne	.L104
+ 	movl	$1, do_vhost
+-	jmp	.L90
+-.L103:
++	jmp	.L91
++.L104:
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1781,10 +1786,10 @@
+ 	movl	%eax, (%esp)
+ 	call	strcmp
+ 	testl	%eax, %eax
+-	jne	.L104
++	jne	.L105
+ 	movl	$0, do_vhost
+-	jmp	.L90
+-.L104:
++	jmp	.L91
++.L105:
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1794,10 +1799,10 @@
+ 	movl	%eax, (%esp)
+ 	call	strcmp
+ 	testl	%eax, %eax
+-	jne	.L105
++	jne	.L106
+ 	movl	$1, do_global_passwd
+-	jmp	.L90
+-.L105:
++	jmp	.L91
++.L106:
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1807,10 +1812,10 @@
+ 	movl	%eax, (%esp)
+ 	call	strcmp
+ 	testl	%eax, %eax
+-	jne	.L106
++	jne	.L107
+ 	movl	$0, do_global_passwd
+-	jmp	.L90
+-.L106:
++	jmp	.L91
++.L107:
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1820,11 +1825,11 @@
+ 	movl	%eax, (%esp)
+ 	call	strcmp
+ 	testl	%eax, %eax
+-	jne	.L107
++	jne	.L108
+ 	movl	-12(%ebp), %eax
+ 	addl	$1, %eax
+ 	cmpl	8(%ebp), %eax
+-	jge	.L107
++	jge	.L108
+ 	addl	$1, -12(%ebp)
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+@@ -1832,8 +1837,8 @@
+ 	addl	%edx, %eax
+ 	movl	(%eax), %eax
+ 	movl	%eax, pidfile
+-	jmp	.L90
+-.L107:
++	jmp	.L91
++.L108:
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1843,11 +1848,11 @@
+ 	movl	%eax, (%esp)
+ 	call	strcmp
+ 	testl	%eax, %eax
+-	jne	.L108
++	jne	.L109
+ 	movl	-12(%ebp), %eax
+ 	addl	$1, %eax
+ 	cmpl	8(%ebp), %eax
+-	jge	.L108
++	jge	.L109
+ 	addl	$1, -12(%ebp)
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+@@ -1855,8 +1860,8 @@
+ 	addl	%edx, %eax
+ 	movl	(%eax), %eax
+ 	movl	%eax, charset
+-	jmp	.L90
+-.L108:
++	jmp	.L91
++.L109:
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1866,11 +1871,11 @@
+ 	movl	%eax, (%esp)
+ 	call	strcmp
+ 	testl	%eax, %eax
+-	jne	.L109
++	jne	.L110
+ 	movl	-12(%ebp), %eax
+ 	addl	$1, %eax
+ 	cmpl	8(%ebp), %eax
+-	jge	.L109
++	jge	.L110
+ 	addl	$1, -12(%ebp)
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+@@ -1878,8 +1883,8 @@
+ 	addl	%edx, %eax
+ 	movl	(%eax), %eax
+ 	movl	%eax, p3p
+-	jmp	.L90
+-.L109:
++	jmp	.L91
++.L110:
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1889,11 +1894,11 @@
+ 	movl	%eax, (%esp)
+ 	call	strcmp
+ 	testl	%eax, %eax
+-	jne	.L110
++	jne	.L111
+ 	movl	-12(%ebp), %eax
+ 	addl	$1, %eax
+ 	cmpl	8(%ebp), %eax
+-	jge	.L110
++	jge	.L111
+ 	addl	$1, -12(%ebp)
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+@@ -1903,8 +1908,8 @@
+ 	movl	%eax, (%esp)
+ 	call	atoi
+ 	movl	%eax, max_age
+-	jmp	.L90
+-.L110:
++	jmp	.L91
++.L111:
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1914,17 +1919,17 @@
+ 	movl	%eax, (%esp)
+ 	call	strcmp
+ 	testl	%eax, %eax
+-	jne	.L111
++	jne	.L112
+ 	movl	$1, debug
+-	jmp	.L90
+-.L111:
++	jmp	.L91
++.L112:
+ 	call	usage
+-.L90:
++.L91:
+ 	addl	$1, -12(%ebp)
+-.L87:
++.L88:
+ 	movl	-12(%ebp), %eax
+ 	cmpl	8(%ebp), %eax
+-	jge	.L112
++	jge	.L113
+ 	movl	-12(%ebp), %eax
+ 	leal	0(,%eax,4), %edx
+ 	movl	12(%ebp), %eax
+@@ -1932,13 +1937,13 @@
+ 	movl	(%eax), %eax
+ 	movzbl	(%eax), %eax
+ 	cmpb	$45, %al
+-	je	.L113
+-.L112:
++	je	.L114
++.L113:
+ 	movl	-12(%ebp), %eax
+ 	cmpl	8(%ebp), %eax
+-	je	.L86
++	je	.L87
+ 	call	usage
+-.L86:
++.L87:
+ 	leave
+ 	.cfi_restore 5
+ 	.cfi_def_cfa 4, 4
+@@ -2042,513 +2047,518 @@
+ 	.cfi_offset 5, -8
+ 	movl	%esp, %ebp
+ 	.cfi_def_cfa_register 5
+-	subl	$10056, %esp
+-	movl	$.LC71, 4(%esp)
++	subl	$10072, %esp
+ 	movl	8(%ebp), %eax
++	movl	%eax, -10044(%ebp)
++	movl	%gs:20, %eax
++	movl	%eax, -12(%ebp)
++	xorl	%eax, %eax
++	movl	$.LC71, 4(%esp)
++	movl	-10044(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	fopen
+-	movl	%eax, -24(%ebp)
+-	cmpl	$0, -24(%ebp)
+-	jne	.L117
+-	movl	8(%ebp), %eax
++	movl	%eax, -10020(%ebp)
++	cmpl	$0, -10020(%ebp)
++	jne	.L118
++	movl	-10044(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	perror
+ 	movl	$1, (%esp)
+ 	call	exit
+-.L117:
+-	jmp	.L118
+-.L153:
++.L118:
++	jmp	.L119
++.L154:
+ 	movl	$35, 4(%esp)
+-	leal	-10028(%ebp), %eax
++	leal	-10012(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strchr
+-	movl	%eax, -12(%ebp)
+-	cmpl	$0, -12(%ebp)
+-	je	.L119
+-	movl	-12(%ebp), %eax
++	movl	%eax, -10032(%ebp)
++	cmpl	$0, -10032(%ebp)
++	je	.L120
++	movl	-10032(%ebp), %eax
+ 	movb	$0, (%eax)
+-.L119:
+-	leal	-10028(%ebp), %eax
+-	movl	%eax, -12(%ebp)
++.L120:
++	leal	-10012(%ebp), %eax
++	movl	%eax, -10032(%ebp)
+ 	movl	$.LC72, 4(%esp)
+-	movl	-12(%ebp), %eax
++	movl	-10032(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strspn
+-	addl	%eax, -12(%ebp)
+-	jmp	.L120
+-.L152:
++	addl	%eax, -10032(%ebp)
++	jmp	.L121
++.L153:
+ 	movl	$.LC72, 4(%esp)
+-	movl	-12(%ebp), %eax
++	movl	-10032(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcspn
+-	movl	-12(%ebp), %edx
++	movl	-10032(%ebp), %edx
+ 	addl	%edx, %eax
+-	movl	%eax, -16(%ebp)
+-	jmp	.L121
+-.L122:
+-	movl	-16(%ebp), %eax
++	movl	%eax, -10028(%ebp)
++	jmp	.L122
++.L123:
++	movl	-10028(%ebp), %eax
+ 	leal	1(%eax), %edx
+-	movl	%edx, -16(%ebp)
++	movl	%edx, -10028(%ebp)
+ 	movb	$0, (%eax)
+-.L121:
+-	movl	-16(%ebp), %eax
++.L122:
++	movl	-10028(%ebp), %eax
+ 	movzbl	(%eax), %eax
+ 	cmpb	$32, %al
+-	je	.L122
+-	movl	-16(%ebp), %eax
++	je	.L123
++	movl	-10028(%ebp), %eax
+ 	movzbl	(%eax), %eax
+ 	cmpb	$9, %al
+-	je	.L122
+-	movl	-16(%ebp), %eax
++	je	.L123
++	movl	-10028(%ebp), %eax
+ 	movzbl	(%eax), %eax
+ 	cmpb	$10, %al
+-	je	.L122
+-	movl	-16(%ebp), %eax
++	je	.L123
++	movl	-10028(%ebp), %eax
+ 	movzbl	(%eax), %eax
+ 	cmpb	$13, %al
+-	je	.L122
+-	movl	-12(%ebp), %eax
+-	movl	%eax, -28(%ebp)
++	je	.L123
++	movl	-10032(%ebp), %eax
++	movl	%eax, -10016(%ebp)
+ 	movl	$61, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strchr
+-	movl	%eax, -20(%ebp)
+-	cmpl	$0, -20(%ebp)
+-	je	.L123
+-	movl	-20(%ebp), %eax
++	movl	%eax, -10024(%ebp)
++	cmpl	$0, -10024(%ebp)
++	je	.L124
++	movl	-10024(%ebp), %eax
+ 	leal	1(%eax), %edx
+-	movl	%edx, -20(%ebp)
++	movl	%edx, -10024(%ebp)
+ 	movb	$0, (%eax)
+-.L123:
++.L124:
+ 	movl	$.LC73, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L124
+-	movl	-20(%ebp), %eax
++	jne	.L125
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	no_value_required
+ 	movl	$1, debug
+-	jmp	.L125
+-.L124:
++	jmp	.L126
++.L125:
+ 	movl	$.LC74, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L126
+-	movl	-20(%ebp), %eax
++	jne	.L127
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	value_required
+-	movl	-20(%ebp), %eax
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	atoi
+ 	movw	%ax, port
+-	jmp	.L125
+-.L126:
++	jmp	.L126
++.L127:
+ 	movl	$.LC75, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L127
+-	movl	-20(%ebp), %eax
++	jne	.L128
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	value_required
+-	movl	-20(%ebp), %eax
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	e_strdup
+ 	movl	%eax, dir
+-	jmp	.L125
+-.L127:
++	jmp	.L126
++.L128:
+ 	movl	$.LC25, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L128
+-	movl	-20(%ebp), %eax
++	jne	.L129
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	no_value_required
+ 	movl	$1, do_chroot
+ 	movl	$1, no_symlink_check
+-	jmp	.L125
+-.L128:
++	jmp	.L126
++.L129:
+ 	movl	$.LC76, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L129
+-	movl	-20(%ebp), %eax
++	jne	.L130
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	no_value_required
+ 	movl	$0, do_chroot
+ 	movl	$0, no_symlink_check
+-	jmp	.L125
+-.L129:
++	jmp	.L126
++.L130:
+ 	movl	$.LC77, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L130
+-	movl	-20(%ebp), %eax
++	jne	.L131
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	value_required
+-	movl	-20(%ebp), %eax
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	e_strdup
+ 	movl	%eax, data_dir
+-	jmp	.L125
+-.L130:
++	jmp	.L126
++.L131:
+ 	movl	$.LC78, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L131
+-	movl	-20(%ebp), %eax
++	jne	.L132
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	no_value_required
+ 	movl	$0, no_symlink_check
+-	jmp	.L125
+-.L131:
++	jmp	.L126
++.L132:
+ 	movl	$.LC79, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L132
+-	movl	-20(%ebp), %eax
++	jne	.L133
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	no_value_required
+ 	movl	$1, no_symlink_check
+-	jmp	.L125
+-.L132:
++	jmp	.L126
++.L133:
+ 	movl	$.LC80, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L133
+-	movl	-20(%ebp), %eax
++	jne	.L134
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	no_value_required
+ 	movl	$0, no_symlink_check
+-	jmp	.L125
+-.L133:
++	jmp	.L126
++.L134:
+ 	movl	$.LC81, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L134
+-	movl	-20(%ebp), %eax
++	jne	.L135
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	no_value_required
+ 	movl	$1, no_symlink_check
+-	jmp	.L125
+-.L134:
++	jmp	.L126
++.L135:
+ 	movl	$.LC82, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L135
+-	movl	-20(%ebp), %eax
++	jne	.L136
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	value_required
+-	movl	-20(%ebp), %eax
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	e_strdup
+ 	movl	%eax, user
+-	jmp	.L125
+-.L135:
++	jmp	.L126
++.L136:
+ 	movl	$.LC83, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L136
+-	movl	-20(%ebp), %eax
++	jne	.L137
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	value_required
+-	movl	-20(%ebp), %eax
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	e_strdup
+ 	movl	%eax, cgi_pattern
+-	jmp	.L125
+-.L136:
++	jmp	.L126
++.L137:
+ 	movl	$.LC84, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L137
+-	movl	-20(%ebp), %eax
++	jne	.L138
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	value_required
+-	movl	-20(%ebp), %eax
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	atoi
+ 	movl	%eax, cgi_limit
+-	jmp	.L125
+-.L137:
++	jmp	.L126
++.L138:
+ 	movl	$.LC85, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L138
+-	movl	-20(%ebp), %eax
++	jne	.L139
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	value_required
+-	movl	-20(%ebp), %eax
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	e_strdup
+ 	movl	%eax, url_pattern
+-	jmp	.L125
+-.L138:
++	jmp	.L126
++.L139:
+ 	movl	$.LC86, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L139
+-	movl	-20(%ebp), %eax
++	jne	.L140
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	no_value_required
+ 	movl	$1, no_empty_referers
+-	jmp	.L125
+-.L139:
++	jmp	.L126
++.L140:
+ 	movl	$.LC87, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L140
+-	movl	-20(%ebp), %eax
++	jne	.L141
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	value_required
+-	movl	-20(%ebp), %eax
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	e_strdup
+ 	movl	%eax, local_pattern
+-	jmp	.L125
+-.L140:
++	jmp	.L126
++.L141:
+ 	movl	$.LC88, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L141
+-	movl	-20(%ebp), %eax
++	jne	.L142
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	value_required
+-	movl	-20(%ebp), %eax
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	e_strdup
+ 	movl	%eax, throttlefile
+-	jmp	.L125
+-.L141:
++	jmp	.L126
++.L142:
+ 	movl	$.LC89, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L142
+-	movl	-20(%ebp), %eax
++	jne	.L143
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	value_required
+-	movl	-20(%ebp), %eax
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	e_strdup
+ 	movl	%eax, hostname
+-	jmp	.L125
+-.L142:
++	jmp	.L126
++.L143:
+ 	movl	$.LC90, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L143
+-	movl	-20(%ebp), %eax
++	jne	.L144
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	value_required
+-	movl	-20(%ebp), %eax
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	e_strdup
+ 	movl	%eax, logfile
+-	jmp	.L125
+-.L143:
++	jmp	.L126
++.L144:
+ 	movl	$.LC91, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L144
+-	movl	-20(%ebp), %eax
++	jne	.L145
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	no_value_required
+ 	movl	$1, do_vhost
+-	jmp	.L125
+-.L144:
++	jmp	.L126
++.L145:
+ 	movl	$.LC92, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L145
+-	movl	-20(%ebp), %eax
++	jne	.L146
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	no_value_required
+ 	movl	$0, do_vhost
+-	jmp	.L125
+-.L145:
++	jmp	.L126
++.L146:
+ 	movl	$.LC93, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L146
+-	movl	-20(%ebp), %eax
++	jne	.L147
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	no_value_required
+ 	movl	$1, do_global_passwd
+-	jmp	.L125
+-.L146:
++	jmp	.L126
++.L147:
+ 	movl	$.LC94, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L147
+-	movl	-20(%ebp), %eax
++	jne	.L148
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	no_value_required
+ 	movl	$0, do_global_passwd
+-	jmp	.L125
+-.L147:
++	jmp	.L126
++.L148:
+ 	movl	$.LC95, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L148
+-	movl	-20(%ebp), %eax
++	jne	.L149
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	value_required
+-	movl	-20(%ebp), %eax
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	e_strdup
+ 	movl	%eax, pidfile
+-	jmp	.L125
+-.L148:
++	jmp	.L126
++.L149:
+ 	movl	$.LC96, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L149
+-	movl	-20(%ebp), %eax
++	jne	.L150
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	value_required
+-	movl	-20(%ebp), %eax
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	e_strdup
+ 	movl	%eax, charset
+-	jmp	.L125
+-.L149:
++	jmp	.L126
++.L150:
+ 	movl	$.LC97, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L150
+-	movl	-20(%ebp), %eax
++	jne	.L151
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	value_required
+-	movl	-20(%ebp), %eax
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	e_strdup
+ 	movl	%eax, p3p
+-	jmp	.L125
+-.L150:
++	jmp	.L126
++.L151:
+ 	movl	$.LC98, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strcasecmp
+ 	testl	%eax, %eax
+-	jne	.L151
+-	movl	-20(%ebp), %eax
++	jne	.L152
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-10016(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	value_required
+-	movl	-20(%ebp), %eax
++	movl	-10024(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	atoi
+ 	movl	%eax, max_age
+-	jmp	.L125
+-.L151:
++	jmp	.L126
++.L152:
+ 	movl	argv0, %edx
+ 	movl	stderr, %eax
+-	movl	-28(%ebp), %ecx
++	movl	-10016(%ebp), %ecx
+ 	movl	%ecx, 12(%esp)
+ 	movl	%edx, 8(%esp)
+ 	movl	$.LC99, 4(%esp)
+@@ -2556,31 +2566,36 @@
+ 	call	fprintf
+ 	movl	$1, (%esp)
+ 	call	exit
+-.L125:
+-	movl	-16(%ebp), %eax
+-	movl	%eax, -12(%ebp)
++.L126:
++	movl	-10028(%ebp), %eax
++	movl	%eax, -10032(%ebp)
+ 	movl	$.LC72, 4(%esp)
+-	movl	-12(%ebp), %eax
++	movl	-10032(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strspn
+-	addl	%eax, -12(%ebp)
+-.L120:
+-	movl	-12(%ebp), %eax
++	addl	%eax, -10032(%ebp)
++.L121:
++	movl	-10032(%ebp), %eax
+ 	movzbl	(%eax), %eax
+ 	testb	%al, %al
+-	jne	.L152
+-.L118:
+-	movl	-24(%ebp), %eax
++	jne	.L153
++.L119:
++	movl	-10020(%ebp), %eax
+ 	movl	%eax, 8(%esp)
+ 	movl	$10000, 4(%esp)
+-	leal	-10028(%ebp), %eax
++	leal	-10012(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	fgets
+ 	testl	%eax, %eax
+-	jne	.L153
+-	movl	-24(%ebp), %eax
++	jne	.L154
++	movl	-10020(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	fclose
++	movl	-12(%ebp), %eax
++	xorl	%gs:20, %eax
++	je	.L155
++	call	__stack_chk_fail
++.L155:
+ 	leave
+ 	.cfi_restore 5
+ 	.cfi_def_cfa 4, 4
+@@ -2604,7 +2619,7 @@
+ 	.cfi_def_cfa_register 5
+ 	subl	$24, %esp
+ 	cmpl	$0, 12(%ebp)
+-	jne	.L154
++	jne	.L156
+ 	movl	argv0, %edx
+ 	movl	stderr, %eax
+ 	movl	8(%ebp), %ecx
+@@ -2615,7 +2630,7 @@
+ 	call	fprintf
+ 	movl	$1, (%esp)
+ 	call	exit
+-.L154:
++.L156:
+ 	leave
+ 	.cfi_restore 5
+ 	.cfi_def_cfa 4, 4
+@@ -2639,7 +2654,7 @@
+ 	.cfi_def_cfa_register 5
+ 	subl	$24, %esp
+ 	cmpl	$0, 12(%ebp)
+-	je	.L156
++	je	.L158
+ 	movl	argv0, %edx
+ 	movl	stderr, %eax
+ 	movl	8(%ebp), %ecx
+@@ -2650,7 +2665,7 @@
+ 	call	fprintf
+ 	movl	$1, (%esp)
+ 	call	exit
+-.L156:
++.L158:
+ 	leave
+ 	.cfi_restore 5
+ 	.cfi_def_cfa 4, 4
+@@ -2681,7 +2696,7 @@
+ 	call	strdup
+ 	movl	%eax, -12(%ebp)
+ 	cmpl	$0, -12(%ebp)
+-	jne	.L159
++	jne	.L161
+ 	movl	$.LC102, 4(%esp)
+ 	movl	$2, (%esp)
+ 	call	syslog
+@@ -2693,7 +2708,7 @@
+ 	call	fprintf
+ 	movl	$1, (%esp)
+ 	call	exit
+-.L159:
++.L161:
+ 	movl	-12(%ebp), %eax
+ 	leave
+ 	.cfi_restore 5
+@@ -2723,8 +2738,19 @@
+ 	movl	%esp, %ebp
+ 	.cfi_def_cfa_register 5
+ 	pushl	%ebx
+-	subl	$100, %esp
++	subl	$132, %esp
+ 	.cfi_offset 3, -12
++	movl	8(%ebp), %eax
++	movl	%eax, -92(%ebp)
++	movl	16(%ebp), %eax
++	movl	%eax, -96(%ebp)
++	movl	20(%ebp), %eax
++	movl	%eax, -100(%ebp)
++	movl	28(%ebp), %eax
++	movl	%eax, -104(%ebp)
++	movl	%gs:20, %eax
++	movl	%eax, -12(%ebp)
++	xorl	%eax, %eax
+ 	movl	$32, 8(%esp)
+ 	movl	$0, 4(%esp)
+ 	leal	-56(%ebp), %eax
+@@ -2738,22 +2764,22 @@
+ 	movl	%eax, 12(%esp)
+ 	movl	$.LC104, 8(%esp)
+ 	movl	$10, 4(%esp)
+-	leal	-66(%ebp), %eax
++	leal	-22(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	snprintf
+ 	movl	hostname, %eax
+-	leal	-72(%ebp), %edx
++	leal	-76(%ebp), %edx
+ 	movl	%edx, 12(%esp)
+ 	leal	-56(%ebp), %edx
+ 	movl	%edx, 8(%esp)
+-	leal	-66(%ebp), %edx
++	leal	-22(%ebp), %edx
+ 	movl	%edx, 4(%esp)
+ 	movl	%eax, (%esp)
+ 	call	getaddrinfo
+-	movl	%eax, -24(%ebp)
+-	cmpl	$0, -24(%ebp)
+-	je	.L162
+-	movl	-24(%ebp), %eax
++	movl	%eax, -60(%ebp)
++	cmpl	$0, -60(%ebp)
++	je	.L164
++	movl	-60(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	gai_strerror
+ 	movl	hostname, %edx
+@@ -2762,7 +2788,7 @@
+ 	movl	$.LC105, 4(%esp)
+ 	movl	$2, (%esp)
+ 	call	syslog
+-	movl	-24(%ebp), %eax
++	movl	-60(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	gai_strerror
+ 	movl	hostname, %ebx
+@@ -2776,53 +2802,53 @@
+ 	call	fprintf
+ 	movl	$1, (%esp)
+ 	call	exit
+-.L162:
+-	movl	$0, -16(%ebp)
+-	movl	$0, -20(%ebp)
++.L164:
++	movl	$0, -68(%ebp)
++	movl	$0, -64(%ebp)
++	movl	-76(%ebp), %eax
++	movl	%eax, -72(%ebp)
++	jmp	.L165
++.L171:
+ 	movl	-72(%ebp), %eax
+-	movl	%eax, -12(%ebp)
+-	jmp	.L163
+-.L169:
+-	movl	-12(%ebp), %eax
+ 	movl	4(%eax), %eax
+ 	cmpl	$2, %eax
+-	je	.L165
++	je	.L167
+ 	cmpl	$10, %eax
+-	jne	.L164
+-	cmpl	$0, -16(%ebp)
+-	jne	.L167
+-	movl	-12(%ebp), %eax
+-	movl	%eax, -16(%ebp)
+-	jmp	.L164
++	jne	.L166
++	cmpl	$0, -68(%ebp)
++	jne	.L169
++	movl	-72(%ebp), %eax
++	movl	%eax, -68(%ebp)
++	jmp	.L166
++.L169:
++	jmp	.L166
+ .L167:
+-	jmp	.L164
+-.L165:
+-	cmpl	$0, -20(%ebp)
+-	jne	.L168
+-	movl	-12(%ebp), %eax
+-	movl	%eax, -20(%ebp)
+-	jmp	.L176
+-.L168:
+-.L176:
++	cmpl	$0, -64(%ebp)
++	jne	.L170
++	movl	-72(%ebp), %eax
++	movl	%eax, -64(%ebp)
++	jmp	.L179
++.L170:
++.L179:
+ 	nop
+-.L164:
+-	movl	-12(%ebp), %eax
++.L166:
++	movl	-72(%ebp), %eax
+ 	movl	28(%eax), %eax
+-	movl	%eax, -12(%ebp)
+-.L163:
+-	cmpl	$0, -12(%ebp)
+-	jne	.L169
+-	cmpl	$0, -16(%ebp)
+-	jne	.L170
+-	movl	28(%ebp), %eax
++	movl	%eax, -72(%ebp)
++.L165:
++	cmpl	$0, -72(%ebp)
++	jne	.L171
++	cmpl	$0, -68(%ebp)
++	jne	.L172
++	movl	-104(%ebp), %eax
+ 	movl	$0, (%eax)
+-	jmp	.L171
+-.L170:
+-	movl	-16(%ebp), %eax
++	jmp	.L173
++.L172:
++	movl	-68(%ebp), %eax
+ 	movl	16(%eax), %eax
+ 	cmpl	24(%ebp), %eax
+-	jbe	.L172
+-	movl	-16(%ebp), %eax
++	jbe	.L174
++	movl	-68(%ebp), %eax
+ 	movl	16(%eax), %edx
+ 	movl	hostname, %eax
+ 	movl	%edx, 16(%esp)
+@@ -2834,36 +2860,36 @@
+ 	call	syslog
+ 	movl	$1, (%esp)
+ 	call	exit
+-.L172:
++.L174:
+ 	movl	24(%ebp), %eax
+ 	movl	%eax, 8(%esp)
+ 	movl	$0, 4(%esp)
+-	movl	20(%ebp), %eax
++	movl	-100(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	memset
+-	movl	-16(%ebp), %eax
++	movl	-68(%ebp), %eax
+ 	movl	16(%eax), %edx
+-	movl	-16(%ebp), %eax
++	movl	-68(%ebp), %eax
+ 	movl	20(%eax), %eax
+ 	movl	%edx, 8(%esp)
+ 	movl	%eax, 4(%esp)
+-	movl	20(%ebp), %eax
++	movl	-100(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	memmove
+-	movl	28(%ebp), %eax
++	movl	-104(%ebp), %eax
+ 	movl	$1, (%eax)
+-.L171:
+-	cmpl	$0, -20(%ebp)
+-	jne	.L173
+-	movl	16(%ebp), %eax
+-	movl	$0, (%eax)
+-	jmp	.L174
+ .L173:
+-	movl	-20(%ebp), %eax
++	cmpl	$0, -64(%ebp)
++	jne	.L175
++	movl	-96(%ebp), %eax
++	movl	$0, (%eax)
++	jmp	.L176
++.L175:
++	movl	-64(%ebp), %eax
+ 	movl	16(%eax), %eax
+ 	cmpl	12(%ebp), %eax
+-	jbe	.L175
+-	movl	-20(%ebp), %eax
++	jbe	.L177
++	movl	-64(%ebp), %eax
+ 	movl	16(%eax), %edx
+ 	movl	hostname, %eax
+ 	movl	%edx, 16(%esp)
+@@ -2875,29 +2901,34 @@
+ 	call	syslog
+ 	movl	$1, (%esp)
+ 	call	exit
+-.L175:
++.L177:
+ 	movl	12(%ebp), %eax
+ 	movl	%eax, 8(%esp)
+ 	movl	$0, 4(%esp)
+-	movl	8(%ebp), %eax
++	movl	-92(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	memset
+-	movl	-20(%ebp), %eax
++	movl	-64(%ebp), %eax
+ 	movl	16(%eax), %edx
+-	movl	-20(%ebp), %eax
++	movl	-64(%ebp), %eax
+ 	movl	20(%eax), %eax
+ 	movl	%edx, 8(%esp)
+ 	movl	%eax, 4(%esp)
+-	movl	8(%ebp), %eax
++	movl	-92(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	memmove
+-	movl	16(%ebp), %eax
++	movl	-96(%ebp), %eax
+ 	movl	$1, (%eax)
+-.L174:
+-	movl	-72(%ebp), %eax
++.L176:
++	movl	-76(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	freeaddrinfo
+-	addl	$100, %esp
++	movl	-12(%ebp), %eax
++	xorl	%gs:20, %eax
++	je	.L178
++	call	__stack_chk_fail
++.L178:
++	addl	$132, %esp
+ 	popl	%ebx
+ 	.cfi_restore 3
+ 	popl	%ebp
+@@ -2939,158 +2970,163 @@
+ 	pushl	%ebx
+ 	subl	$10068, %esp
+ 	.cfi_offset 3, -12
+-	movl	$.LC71, 4(%esp)
+ 	movl	8(%ebp), %eax
++	movl	%eax, -10044(%ebp)
++	movl	%gs:20, %eax
++	movl	%eax, -12(%ebp)
++	xorl	%eax, %eax
++	movl	$.LC71, 4(%esp)
++	movl	-10044(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	fopen
+-	movl	%eax, -16(%ebp)
+-	cmpl	$0, -16(%ebp)
+-	jne	.L178
+-	movl	8(%ebp), %eax
++	movl	%eax, -10028(%ebp)
++	cmpl	$0, -10028(%ebp)
++	jne	.L181
++	movl	-10044(%ebp), %eax
+ 	movl	%eax, 8(%esp)
+ 	movl	$.LC13, 4(%esp)
+ 	movl	$2, (%esp)
+ 	call	syslog
+-	movl	8(%ebp), %eax
++	movl	-10044(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	perror
+ 	movl	$1, (%esp)
+ 	call	exit
+-.L178:
++.L181:
+ 	movl	$0, 4(%esp)
+-	leal	-10036(%ebp), %eax
++	leal	-10020(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	gettimeofday
+-	jmp	.L179
+-.L193:
++	jmp	.L182
++.L196:
+ 	movl	$35, 4(%esp)
+-	leal	-5020(%ebp), %eax
++	leal	-10012(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strchr
+-	movl	%eax, -20(%ebp)
+-	cmpl	$0, -20(%ebp)
+-	je	.L180
+-	movl	-20(%ebp), %eax
++	movl	%eax, -10024(%ebp)
++	cmpl	$0, -10024(%ebp)
++	je	.L183
++	movl	-10024(%ebp), %eax
+ 	movb	$0, (%eax)
+-.L180:
+-	leal	-5020(%ebp), %eax
++.L183:
++	leal	-10012(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strlen
+-	movl	%eax, -12(%ebp)
+-	jmp	.L181
+-.L183:
+-	subl	$1, -12(%ebp)
+-	leal	-5020(%ebp), %edx
+-	movl	-12(%ebp), %eax
++	movl	%eax, -10032(%ebp)
++	jmp	.L184
++.L186:
++	subl	$1, -10032(%ebp)
++	leal	-10012(%ebp), %edx
++	movl	-10032(%ebp), %eax
+ 	addl	%edx, %eax
+ 	movb	$0, (%eax)
+-.L181:
+-	cmpl	$0, -12(%ebp)
+-	jle	.L182
+-	movl	-12(%ebp), %eax
++.L184:
++	cmpl	$0, -10032(%ebp)
++	jle	.L185
++	movl	-10032(%ebp), %eax
+ 	subl	$1, %eax
+-	movzbl	-5020(%ebp,%eax), %eax
++	movzbl	-10012(%ebp,%eax), %eax
+ 	cmpb	$32, %al
+-	je	.L183
+-	movl	-12(%ebp), %eax
++	je	.L186
++	movl	-10032(%ebp), %eax
+ 	subl	$1, %eax
+-	movzbl	-5020(%ebp,%eax), %eax
++	movzbl	-10012(%ebp,%eax), %eax
+ 	cmpb	$9, %al
+-	je	.L183
+-	movl	-12(%ebp), %eax
++	je	.L186
++	movl	-10032(%ebp), %eax
+ 	subl	$1, %eax
+-	movzbl	-5020(%ebp,%eax), %eax
++	movzbl	-10012(%ebp,%eax), %eax
+ 	cmpb	$10, %al
+-	je	.L183
+-	movl	-12(%ebp), %eax
++	je	.L186
++	movl	-10032(%ebp), %eax
+ 	subl	$1, %eax
+-	movzbl	-5020(%ebp,%eax), %eax
++	movzbl	-10012(%ebp,%eax), %eax
+ 	cmpb	$13, %al
+-	je	.L183
+-.L182:
+-	cmpl	$0, -12(%ebp)
+-	jne	.L184
+-	jmp	.L179
+-.L184:
+-	leal	-10024(%ebp), %eax
++	je	.L186
++.L185:
++	cmpl	$0, -10032(%ebp)
++	jne	.L187
++	jmp	.L182
++.L187:
++	leal	-10040(%ebp), %eax
+ 	movl	%eax, 16(%esp)
+-	leal	-10028(%ebp), %eax
++	leal	-10036(%ebp), %eax
+ 	movl	%eax, 12(%esp)
+-	leal	-10020(%ebp), %eax
++	leal	-5012(%ebp), %eax
+ 	movl	%eax, 8(%esp)
+ 	movl	$.LC108, 4(%esp)
+-	leal	-5020(%ebp), %eax
++	leal	-10012(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	__isoc99_sscanf
+ 	cmpl	$3, %eax
+-	je	.L185
+-	leal	-10024(%ebp), %eax
++	je	.L188
++	leal	-10040(%ebp), %eax
+ 	movl	%eax, 12(%esp)
+-	leal	-10020(%ebp), %eax
++	leal	-5012(%ebp), %eax
+ 	movl	%eax, 8(%esp)
+ 	movl	$.LC109, 4(%esp)
+-	leal	-5020(%ebp), %eax
++	leal	-10012(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	__isoc99_sscanf
+ 	cmpl	$2, %eax
+-	jne	.L186
+-	movl	$0, -10028(%ebp)
+-	jmp	.L185
+-.L186:
+-	leal	-5020(%ebp), %eax
++	jne	.L189
++	movl	$0, -10036(%ebp)
++	jmp	.L188
++.L189:
++	leal	-10012(%ebp), %eax
+ 	movl	%eax, 12(%esp)
+-	movl	8(%ebp), %eax
++	movl	-10044(%ebp), %eax
+ 	movl	%eax, 8(%esp)
+ 	movl	$.LC110, 4(%esp)
+ 	movl	$2, (%esp)
+ 	call	syslog
+ 	movl	argv0, %edx
+ 	movl	stderr, %eax
+-	leal	-5020(%ebp), %ecx
++	leal	-10012(%ebp), %ecx
+ 	movl	%ecx, 16(%esp)
+-	movl	8(%ebp), %ecx
++	movl	-10044(%ebp), %ecx
+ 	movl	%ecx, 12(%esp)
+ 	movl	%edx, 8(%esp)
+ 	movl	$.LC111, 4(%esp)
+ 	movl	%eax, (%esp)
+ 	call	fprintf
+-	jmp	.L179
+-.L185:
+-	movzbl	-10020(%ebp), %eax
++	jmp	.L182
++.L188:
++	movzbl	-5012(%ebp), %eax
+ 	cmpb	$47, %al
+-	jne	.L187
+-	leal	-10020(%ebp), %eax
++	jne	.L190
++	leal	-5012(%ebp), %eax
+ 	addl	$1, %eax
+ 	movl	%eax, 4(%esp)
+-	leal	-10020(%ebp), %eax
++	leal	-5012(%ebp), %eax
+ 	movl	%eax, (%esp)
+-	call	strcpy
+-	jmp	.L188
+-.L187:
+-	jmp	.L188
+-.L189:
+-	movl	-20(%ebp), %eax
++	call	strcpy
++	jmp	.L191
++.L190:
++	jmp	.L191
++.L192:
++	movl	-10024(%ebp), %eax
+ 	leal	2(%eax), %edx
+-	movl	-20(%ebp), %eax
++	movl	-10024(%ebp), %eax
+ 	addl	$1, %eax
+ 	movl	%edx, 4(%esp)
+ 	movl	%eax, (%esp)
+ 	call	strcpy
+-.L188:
++.L191:
+ 	movl	$.LC112, 4(%esp)
+-	leal	-10020(%ebp), %eax
++	leal	-5012(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	strstr
+-	movl	%eax, -20(%ebp)
+-	cmpl	$0, -20(%ebp)
+-	jne	.L189
++	movl	%eax, -10024(%ebp)
++	cmpl	$0, -10024(%ebp)
++	jne	.L192
+ 	movl	numthrottles, %edx
+ 	movl	maxthrottles, %eax
+ 	cmpl	%eax, %edx
+-	jl	.L190
++	jl	.L193
+ 	movl	maxthrottles, %eax
+ 	testl	%eax, %eax
+-	jne	.L191
++	jne	.L194
+ 	movl	$100, maxthrottles
+ 	movl	maxthrottles, %eax
+ 	movl	%eax, %edx
+@@ -3101,8 +3137,8 @@
+ 	movl	%eax, (%esp)
+ 	call	malloc
+ 	movl	%eax, throttles
+-	jmp	.L192
+-.L191:
++	jmp	.L195
++.L194:
+ 	movl	maxthrottles, %eax
+ 	addl	%eax, %eax
+ 	movl	%eax, maxthrottles
+@@ -3118,10 +3154,10 @@
+ 	movl	%eax, (%esp)
+ 	call	realloc
+ 	movl	%eax, throttles
+-.L192:
++.L195:
+ 	movl	throttles, %eax
+ 	testl	%eax, %eax
+-	jne	.L190
++	jne	.L193
+ 	movl	$.LC113, 4(%esp)
+ 	movl	$2, (%esp)
+ 	call	syslog
+@@ -3133,7 +3169,7 @@
+ 	call	fprintf
+ 	movl	$1, (%esp)
+ 	call	exit
+-.L190:
++.L193:
+ 	movl	throttles, %ecx
+ 	movl	numthrottles, %eax
+ 	movl	%eax, %edx
+@@ -3142,7 +3178,7 @@
+ 	addl	%edx, %eax
+ 	sall	$3, %eax
+ 	leal	(%ecx,%eax), %ebx
+-	leal	-10020(%ebp), %eax
++	leal	-5012(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	e_strdup
+ 	movl	%eax, (%ebx)
+@@ -3154,7 +3190,7 @@
+ 	addl	%edx, %eax
+ 	sall	$3, %eax
+ 	leal	(%ecx,%eax), %edx
+-	movl	-10024(%ebp), %eax
++	movl	-10040(%ebp), %eax
+ 	movl	%eax, 4(%edx)
+ 	movl	throttles, %ecx
+ 	movl	numthrottles, %eax
+@@ -3164,7 +3200,7 @@
+ 	addl	%edx, %eax
+ 	sall	$3, %eax
+ 	leal	(%ecx,%eax), %edx
+-	movl	-10028(%ebp), %eax
++	movl	-10036(%ebp), %eax
+ 	movl	%eax, 8(%edx)
+ 	movl	throttles, %ecx
+ 	movl	numthrottles, %eax
+@@ -3196,18 +3232,23 @@
+ 	movl	numthrottles, %eax
+ 	addl	$1, %eax
+ 	movl	%eax, numthrottles
+-.L179:
+-	movl	-16(%ebp), %eax
++.L182:
++	movl	-10028(%ebp), %eax
+ 	movl	%eax, 8(%esp)
+ 	movl	$5000, 4(%esp)
+-	leal	-5020(%ebp), %eax
++	leal	-10012(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	fgets
+ 	testl	%eax, %eax
+-	jne	.L193
+-	movl	-16(%ebp), %eax
++	jne	.L196
++	movl	-10028(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	fclose
++	movl	-12(%ebp), %eax
++	xorl	%gs:20, %eax
++	je	.L197
++	call	__stack_chk_fail
++.L197:
+ 	addl	$10068, %esp
+ 	popl	%ebx
+ 	.cfi_restore 3
+@@ -3229,17 +3270,17 @@
+ 	.cfi_def_cfa_register 5
+ 	subl	$40, %esp
+ 	movl	$0, 4(%esp)
+-	leal	-24(%ebp), %eax
++	leal	-16(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	gettimeofday
+-	leal	-24(%ebp), %eax
++	leal	-16(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	logstats
+-	movl	$0, -12(%ebp)
+-	jmp	.L195
+-.L198:
++	movl	$0, -24(%ebp)
++	jmp	.L199
++.L202:
+ 	movl	connects, %ecx
+-	movl	-12(%ebp), %edx
++	movl	-24(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -3247,22 +3288,22 @@
+ 	addl	%ecx, %eax
+ 	movl	(%eax), %eax
+ 	testl	%eax, %eax
+-	je	.L196
++	je	.L200
+ 	movl	connects, %ecx
+-	movl	-12(%ebp), %edx
++	movl	-24(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+ 	sall	$5, %eax
+ 	addl	%ecx, %eax
+ 	movl	8(%eax), %eax
+-	leal	-24(%ebp), %edx
++	leal	-16(%ebp), %edx
+ 	movl	%edx, 4(%esp)
+ 	movl	%eax, (%esp)
+ 	call	httpd_close_conn
+-.L196:
++.L200:
+ 	movl	connects, %ecx
+-	movl	-12(%ebp), %edx
++	movl	-24(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -3270,9 +3311,9 @@
+ 	addl	%ecx, %eax
+ 	movl	8(%eax), %eax
+ 	testl	%eax, %eax
+-	je	.L197
++	je	.L201
+ 	movl	connects, %ecx
+-	movl	-12(%ebp), %edx
++	movl	-24(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -3282,7 +3323,7 @@
+ 	movl	%eax, (%esp)
+ 	call	httpd_destroy_conn
+ 	movl	connects, %ecx
+-	movl	-12(%ebp), %edx
++	movl	-24(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -3295,47 +3336,47 @@
+ 	subl	$1, %eax
+ 	movl	%eax, httpd_conn_count
+ 	movl	connects, %ecx
+-	movl	-12(%ebp), %edx
++	movl	-24(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+ 	sall	$5, %eax
+ 	addl	%ecx, %eax
+ 	movl	$0, 8(%eax)
+-.L197:
+-	addl	$1, -12(%ebp)
+-.L195:
++.L201:
++	addl	$1, -24(%ebp)
++.L199:
+ 	movl	max_connects, %eax
+-	cmpl	%eax, -12(%ebp)
+-	jl	.L198
++	cmpl	%eax, -24(%ebp)
++	jl	.L202
+ 	movl	hs, %eax
+ 	testl	%eax, %eax
+-	je	.L199
++	je	.L203
+ 	movl	hs, %eax
+-	movl	%eax, -16(%ebp)
++	movl	%eax, -20(%ebp)
+ 	movl	$0, hs
+-	movl	-16(%ebp), %eax
++	movl	-20(%ebp), %eax
+ 	movl	40(%eax), %eax
+ 	cmpl	$-1, %eax
+-	je	.L200
+-	movl	-16(%ebp), %eax
++	je	.L204
++	movl	-20(%ebp), %eax
+ 	movl	40(%eax), %eax
+ 	movl	%eax, (%esp)
+ 	call	fdwatch_del_fd
+-.L200:
+-	movl	-16(%ebp), %eax
++.L204:
++	movl	-20(%ebp), %eax
+ 	movl	44(%eax), %eax
+ 	cmpl	$-1, %eax
+-	je	.L201
+-	movl	-16(%ebp), %eax
++	je	.L205
++	movl	-20(%ebp), %eax
+ 	movl	44(%eax), %eax
+ 	movl	%eax, (%esp)
+ 	call	fdwatch_del_fd
+-.L201:
+-	movl	-16(%ebp), %eax
++.L205:
++	movl	-20(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	httpd_terminate
+-.L199:
++.L203:
+ 	call	mmc_destroy
+ 	call	tmr_destroy
+ 	movl	connects, %eax
+@@ -3343,11 +3384,11 @@
+ 	call	free
+ 	movl	throttles, %eax
+ 	testl	%eax, %eax
+-	je	.L194
++	je	.L198
+ 	movl	throttles, %eax
+ 	movl	%eax, (%esp)
+ 	call	free
+-.L194:
++.L198:
+ 	leave
+ 	.cfi_restore 5
+ 	.cfi_def_cfa 4, 4
+@@ -3375,11 +3416,11 @@
+ 	movl	%esp, %ebp
+ 	.cfi_def_cfa_register 5
+ 	subl	$40, %esp
+-.L214:
++.L218:
+ 	movl	num_connects, %edx
+ 	movl	max_connects, %eax
+ 	cmpl	%eax, %edx
+-	jl	.L204
++	jl	.L208
+ 	movl	$.LC115, 4(%esp)
+ 	movl	$4, (%esp)
+ 	call	syslog
+@@ -3387,11 +3428,11 @@
+ 	movl	%eax, (%esp)
+ 	call	tmr_run
+ 	movl	$0, %eax
+-	jmp	.L215
+-.L204:
++	jmp	.L219
++.L208:
+ 	movl	first_free_connect, %eax
+ 	cmpl	$-1, %eax
+-	je	.L206
++	je	.L210
+ 	movl	connects, %ecx
+ 	movl	first_free_connect, %eax
+ 	movl	%eax, %edx
+@@ -3402,14 +3443,14 @@
+ 	addl	%ecx, %eax
+ 	movl	(%eax), %eax
+ 	testl	%eax, %eax
+-	je	.L207
+-.L206:
++	je	.L211
++.L210:
+ 	movl	$.LC116, 4(%esp)
+ 	movl	$2, (%esp)
+ 	call	syslog
+ 	movl	$1, (%esp)
+ 	call	exit
+-.L207:
++.L211:
+ 	movl	connects, %ecx
+ 	movl	first_free_connect, %eax
+ 	movl	%eax, %edx
+@@ -3422,7 +3463,7 @@
+ 	movl	-12(%ebp), %eax
+ 	movl	8(%eax), %eax
+ 	testl	%eax, %eax
+-	jne	.L208
++	jne	.L212
+ 	movl	$456, (%esp)
+ 	call	malloc
+ 	movl	%eax, %edx
+@@ -3431,20 +3472,20 @@
+ 	movl	-12(%ebp), %eax
+ 	movl	8(%eax), %eax
+ 	testl	%eax, %eax
+-	jne	.L209
++	jne	.L213
+ 	movl	$.LC117, 4(%esp)
+ 	movl	$2, (%esp)
+ 	call	syslog
+ 	movl	$1, (%esp)
+ 	call	exit
+-.L209:
++.L213:
+ 	movl	-12(%ebp), %eax
+ 	movl	8(%eax), %eax
+ 	movl	$0, (%eax)
+ 	movl	httpd_conn_count, %eax
+ 	addl	$1, %eax
+ 	movl	%eax, httpd_conn_count
+-.L208:
++.L212:
+ 	movl	-12(%ebp), %eax
+ 	movl	8(%eax), %edx
+ 	movl	hs, %eax
+@@ -3454,20 +3495,20 @@
+ 	movl	%eax, (%esp)
+ 	call	httpd_get_conn
+ 	testl	%eax, %eax
+-	je	.L211
++	je	.L215
+ 	cmpl	$2, %eax
+-	je	.L212
+-	jmp	.L216
+-.L211:
++	je	.L216
++	jmp	.L220
++.L215:
+ 	movl	8(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	tmr_run
+ 	movl	$0, %eax
+-	jmp	.L215
+-.L212:
+-	movl	$1, %eax
+-	jmp	.L215
++	jmp	.L219
+ .L216:
++	movl	$1, %eax
++	jmp	.L219
++.L220:
+ 	movl	-12(%ebp), %eax
+ 	movl	$1, (%eax)
+ 	movl	-12(%ebp), %eax
+@@ -3511,13 +3552,13 @@
+ 	movl	num_connects, %edx
+ 	movl	stats_simultaneous, %eax
+ 	cmpl	%eax, %edx
+-	jle	.L213
++	jle	.L217
+ 	movl	num_connects, %eax
+ 	movl	%eax, stats_simultaneous
+-	jmp	.L214
+-.L213:
+-	jmp	.L214
+-.L215:
++	jmp	.L218
++.L217:
++	jmp	.L218
++.L219:
+ 	leave
+ 	.cfi_restore 5
+ 	.cfi_def_cfa 4, 4
+@@ -3545,11 +3586,11 @@
+ 	movl	-16(%ebp), %eax
+ 	movl	140(%eax), %eax
+ 	cmpl	%eax, %edx
+-	jb	.L218
++	jb	.L222
+ 	movl	-16(%ebp), %eax
+ 	movl	140(%eax), %eax
+ 	cmpl	$5000, %eax
+-	jbe	.L219
++	jbe	.L223
+ 	movl	httpd_err400form, %edx
+ 	movl	httpd_err400title, %eax
+ 	movl	$.LC45, 20(%esp)
+@@ -3565,8 +3606,8 @@
+ 	movl	8(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	finish_connection
+-	jmp	.L217
+-.L219:
++	jmp	.L221
++.L223:
+ 	movl	-16(%ebp), %eax
+ 	movl	140(%eax), %eax
+ 	leal	1000(%eax), %ecx
+@@ -3578,7 +3619,7 @@
+ 	movl	%edx, 4(%esp)
+ 	movl	%eax, (%esp)
+ 	call	httpd_realloc_str
+-.L218:
++.L222:
+ 	movl	-16(%ebp), %eax
+ 	movl	140(%eax), %edx
+ 	movl	-16(%ebp), %eax
+@@ -3592,9 +3633,9 @@
+ 	movl	%ecx, 4(%esp)
+ 	movl	%eax, (%esp)
+ 	call	read
+-	movl	%eax, -20(%ebp)
+-	cmpl	$0, -20(%ebp)
+-	jne	.L221
++	movl	%eax, -12(%ebp)
++	cmpl	$0, -12(%ebp)
++	jne	.L225
+ 	movl	httpd_err400form, %edx
+ 	movl	httpd_err400title, %eax
+ 	movl	$.LC45, 20(%esp)
+@@ -3610,25 +3651,25 @@
+ 	movl	8(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	finish_connection
+-	jmp	.L217
+-.L221:
+-	cmpl	$0, -20(%ebp)
+-	jns	.L222
++	jmp	.L221
++.L225:
++	cmpl	$0, -12(%ebp)
++	jns	.L226
+ 	call	__errno_location
+ 	movl	(%eax), %eax
+ 	cmpl	$4, %eax
+-	je	.L223
++	je	.L227
+ 	call	__errno_location
+ 	movl	(%eax), %eax
+ 	cmpl	$11, %eax
+-	je	.L223
++	je	.L227
+ 	call	__errno_location
+ 	movl	(%eax), %eax
+ 	cmpl	$11, %eax
+-	jne	.L224
+-.L223:
+-	jmp	.L217
+-.L224:
++	jne	.L228
++.L227:
++	jmp	.L221
++.L228:
+ 	movl	httpd_err400form, %edx
+ 	movl	httpd_err400title, %eax
+ 	movl	$.LC45, 20(%esp)
+@@ -3644,11 +3685,11 @@
+ 	movl	8(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	finish_connection
+-	jmp	.L217
+-.L222:
++	jmp	.L221
++.L226:
+ 	movl	-16(%ebp), %eax
+ 	movl	144(%eax), %edx
+-	movl	-20(%ebp), %eax
++	movl	-12(%ebp), %eax
+ 	addl	%eax, %edx
+ 	movl	-16(%ebp), %eax
+ 	movl	%edx, 144(%eax)
+@@ -3660,9 +3701,9 @@
+ 	movl	%eax, (%esp)
+ 	call	httpd_got_request
+ 	testl	%eax, %eax
+-	je	.L240
++	je	.L244
+ 	cmpl	$2, %eax
+-	jne	.L239
++	jne	.L243
+ 	movl	httpd_err400form, %edx
+ 	movl	httpd_err400title, %eax
+ 	movl	$.LC45, 20(%esp)
+@@ -3678,25 +3719,25 @@
+ 	movl	8(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	finish_connection
+-	jmp	.L217
+-.L239:
++	jmp	.L221
++.L243:
+ 	movl	-16(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	httpd_parse_request
+ 	testl	%eax, %eax
+-	jns	.L228
++	jns	.L232
+ 	movl	12(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+ 	movl	8(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	finish_connection
+-	jmp	.L217
+-.L228:
++	jmp	.L221
++.L232:
+ 	movl	8(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	check_throttles
+ 	testl	%eax, %eax
+-	jne	.L229
++	jne	.L233
+ 	movl	-16(%ebp), %eax
+ 	movl	172(%eax), %ecx
+ 	movl	httpd_err503form, %edx
+@@ -3714,26 +3755,26 @@
+ 	movl	8(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	finish_connection
+-	jmp	.L217
+-.L229:
++	jmp	.L221
++.L233:
+ 	movl	12(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+ 	movl	-16(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	httpd_start_request
+ 	testl	%eax, %eax
+-	jns	.L230
++	jns	.L234
+ 	movl	12(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+ 	movl	8(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	finish_connection
+-	jmp	.L217
+-.L230:
++	jmp	.L221
++.L234:
+ 	movl	-16(%ebp), %eax
+ 	movl	336(%eax), %eax
+ 	testl	%eax, %eax
+-	je	.L231
++	je	.L235
+ 	movl	-16(%ebp), %eax
+ 	movl	344(%eax), %edx
+ 	movl	8(%ebp), %eax
+@@ -3743,31 +3784,31 @@
+ 	leal	1(%eax), %edx
+ 	movl	8(%ebp), %eax
+ 	movl	%edx, 88(%eax)
+-	jmp	.L232
+-.L231:
++	jmp	.L236
++.L235:
+ 	movl	-16(%ebp), %eax
+ 	movl	164(%eax), %eax
+ 	testl	%eax, %eax
+-	jns	.L233
++	jns	.L237
+ 	movl	8(%ebp), %eax
+ 	movl	$0, 88(%eax)
+-	jmp	.L232
+-.L233:
++	jmp	.L236
++.L237:
+ 	movl	-16(%ebp), %eax
+ 	movl	164(%eax), %edx
+ 	movl	8(%ebp), %eax
+ 	movl	%edx, 88(%eax)
+-.L232:
++.L236:
+ 	movl	-16(%ebp), %eax
+ 	movl	452(%eax), %eax
+ 	testl	%eax, %eax
+-	jne	.L234
+-	movl	$0, -12(%ebp)
+-	jmp	.L235
+-.L236:
++	jne	.L238
++	movl	$0, -20(%ebp)
++	jmp	.L239
++.L240:
+ 	movl	throttles, %ecx
+ 	movl	8(%ebp), %eax
+-	movl	-12(%ebp), %edx
++	movl	-20(%ebp), %edx
+ 	movl	12(%eax,%edx,4), %eax
+ 	movl	%eax, %edx
+ 	movl	%edx, %eax
+@@ -3777,7 +3818,7 @@
+ 	addl	%eax, %ecx
+ 	movl	throttles, %ebx
+ 	movl	8(%ebp), %eax
+-	movl	-12(%ebp), %edx
++	movl	-20(%ebp), %edx
+ 	movl	12(%eax,%edx,4), %eax
+ 	movl	%eax, %edx
+ 	movl	%edx, %eax
+@@ -3790,12 +3831,12 @@
+ 	movl	168(%eax), %eax
+ 	addl	%edx, %eax
+ 	movl	%eax, 16(%ecx)
+-	addl	$1, -12(%ebp)
+-.L235:
++	addl	$1, -20(%ebp)
++.L239:
+ 	movl	8(%ebp), %eax
+ 	movl	52(%eax), %eax
+-	cmpl	-12(%ebp), %eax
+-	jg	.L236
++	cmpl	-20(%ebp), %eax
++	jg	.L240
+ 	movl	-16(%ebp), %eax
+ 	movl	168(%eax), %edx
+ 	movl	8(%ebp), %eax
+@@ -3805,21 +3846,21 @@
+ 	movl	8(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	finish_connection
+-	jmp	.L217
+-.L234:
++	jmp	.L221
++.L238:
+ 	movl	8(%ebp), %eax
+ 	movl	92(%eax), %edx
+ 	movl	8(%ebp), %eax
+ 	movl	88(%eax), %eax
+ 	cmpl	%eax, %edx
+-	jl	.L237
++	jl	.L241
+ 	movl	12(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+ 	movl	8(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	finish_connection
+-	jmp	.L217
+-.L237:
++	jmp	.L221
++.L241:
+ 	movl	8(%ebp), %eax
+ 	movl	$2, (%eax)
+ 	movl	12(%ebp), %eax
+@@ -3841,10 +3882,10 @@
+ 	movl	%edx, 4(%esp)
+ 	movl	%eax, (%esp)
+ 	call	fdwatch_add_fd
+-	jmp	.L217
+-.L240:
++	jmp	.L221
++.L244:
+ 	nop
+-.L217:
++.L221:
+ 	addl	$52, %esp
+ 	popl	%ebx
+ 	.cfi_restore 3
+@@ -3881,26 +3922,26 @@
+ 	.cfi_offset 3, -16
+ 	movl	8(%ebp), %eax
+ 	movl	8(%eax), %eax
+-	movl	%eax, -28(%ebp)
++	movl	%eax, -36(%ebp)
+ 	movl	8(%ebp), %eax
+ 	movl	56(%eax), %eax
+ 	cmpl	$-1, %eax
+-	jne	.L242
+-	movl	$1000000000, -12(%ebp)
+-	jmp	.L243
+-.L242:
++	jne	.L246
++	movl	$1000000000, -52(%ebp)
++	jmp	.L247
++.L246:
+ 	movl	8(%ebp), %eax
+ 	movl	56(%eax), %eax
+ 	leal	3(%eax), %edx
+ 	testl	%eax, %eax
+ 	cmovs	%edx, %eax
+ 	sarl	$2, %eax
+-	movl	%eax, -12(%ebp)
+-.L243:
+-	movl	-28(%ebp), %eax
++	movl	%eax, -52(%ebp)
++.L247:
++	movl	-36(%ebp), %eax
+ 	movl	304(%eax), %eax
+ 	testl	%eax, %eax
+-	jne	.L244
++	jne	.L248
+ 	movl	8(%ebp), %eax
+ 	movl	88(%eax), %edx
+ 	movl	8(%ebp), %eax
+@@ -3908,35 +3949,35 @@
+ 	subl	%eax, %edx
+ 	movl	%edx, %eax
+ 	movl	%eax, %edx
+-	movl	-12(%ebp), %eax
++	movl	-52(%ebp), %eax
+ 	cmpl	%eax, %edx
+ 	cmova	%eax, %edx
+-	movl	-28(%ebp), %eax
++	movl	-36(%ebp), %eax
+ 	movl	452(%eax), %ecx
+ 	movl	8(%ebp), %eax
+ 	movl	92(%eax), %eax
+ 	addl	%eax, %ecx
+-	movl	-28(%ebp), %eax
++	movl	-36(%ebp), %eax
+ 	movl	448(%eax), %eax
+ 	movl	%edx, 8(%esp)
+ 	movl	%ecx, 4(%esp)
+ 	movl	%eax, (%esp)
+ 	call	write
+-	movl	%eax, -16(%ebp)
+-	jmp	.L245
+-.L244:
+-	movl	-28(%ebp), %eax
++	movl	%eax, -48(%ebp)
++	jmp	.L249
++.L248:
++	movl	-36(%ebp), %eax
+ 	movl	252(%eax), %eax
+-	movl	%eax, -56(%ebp)
+-	movl	-28(%ebp), %eax
++	movl	%eax, -24(%ebp)
++	movl	-36(%ebp), %eax
+ 	movl	304(%eax), %eax
+-	movl	%eax, -52(%ebp)
+-	movl	-28(%ebp), %eax
++	movl	%eax, -20(%ebp)
++	movl	-36(%ebp), %eax
+ 	movl	452(%eax), %edx
+ 	movl	8(%ebp), %eax
+ 	movl	92(%eax), %eax
+ 	addl	%edx, %eax
+-	movl	%eax, -48(%ebp)
++	movl	%eax, -16(%ebp)
+ 	movl	8(%ebp), %eax
+ 	movl	88(%eax), %edx
+ 	movl	8(%ebp), %eax
+@@ -3944,40 +3985,40 @@
+ 	subl	%eax, %edx
+ 	movl	%edx, %eax
+ 	movl	%eax, %edx
+-	movl	-12(%ebp), %eax
++	movl	-52(%ebp), %eax
+ 	cmpl	%eax, %edx
+ 	cmovbe	%edx, %eax
+-	movl	%eax, -44(%ebp)
+-	movl	-28(%ebp), %eax
++	movl	%eax, -12(%ebp)
++	movl	-36(%ebp), %eax
+ 	movl	448(%eax), %eax
+ 	movl	$2, 8(%esp)
+-	leal	-56(%ebp), %edx
++	leal	-24(%ebp), %edx
+ 	movl	%edx, 4(%esp)
+ 	movl	%eax, (%esp)
+ 	call	writev
+-	movl	%eax, -16(%ebp)
+-.L245:
+-	cmpl	$0, -16(%ebp)
+-	jns	.L246
++	movl	%eax, -48(%ebp)
++.L249:
++	cmpl	$0, -48(%ebp)
++	jns	.L250
+ 	call	__errno_location
+ 	movl	(%eax), %eax
+ 	cmpl	$4, %eax
+-	jne	.L246
+-	jmp	.L241
+-.L246:
+-	cmpl	$0, -16(%ebp)
+-	je	.L248
+-	cmpl	$0, -16(%ebp)
+-	jns	.L249
++	jne	.L250
++	jmp	.L245
++.L250:
++	cmpl	$0, -48(%ebp)
++	je	.L252
++	cmpl	$0, -48(%ebp)
++	jns	.L253
+ 	call	__errno_location
+ 	movl	(%eax), %eax
+ 	cmpl	$11, %eax
+-	je	.L248
++	je	.L252
+ 	call	__errno_location
+ 	movl	(%eax), %eax
+ 	cmpl	$11, %eax
+-	jne	.L249
+-.L248:
++	jne	.L253
++.L252:
+ 	movl	8(%ebp), %eax
+ 	movl	80(%eax), %eax
+ 	leal	100(%eax), %edx
+@@ -3985,25 +4026,25 @@
+ 	movl	%edx, 80(%eax)
+ 	movl	8(%ebp), %eax
+ 	movl	$3, (%eax)
+-	movl	-28(%ebp), %eax
++	movl	-36(%ebp), %eax
+ 	movl	448(%eax), %eax
+ 	movl	%eax, (%esp)
+ 	call	fdwatch_del_fd
+ 	movl	8(%ebp), %eax
+-	movl	%eax, -40(%ebp)
++	movl	%eax, -24(%ebp)
+ 	movl	8(%ebp), %eax
+ 	movl	72(%eax), %eax
+ 	testl	%eax, %eax
+-	je	.L250
++	je	.L254
+ 	movl	$.LC118, 4(%esp)
+ 	movl	$3, (%esp)
+ 	call	syslog
+-.L250:
++.L254:
+ 	movl	8(%ebp), %eax
+ 	movl	80(%eax), %eax
+ 	movl	$0, 16(%esp)
+ 	movl	%eax, 12(%esp)
+-	movl	-40(%ebp), %eax
++	movl	-24(%ebp), %eax
+ 	movl	%eax, 8(%esp)
+ 	movl	$wakeup_connection, 4(%esp)
+ 	movl	12(%ebp), %eax
+@@ -4014,91 +4055,91 @@
+ 	movl	8(%ebp), %eax
+ 	movl	72(%eax), %eax
+ 	testl	%eax, %eax
+-	jne	.L251
++	jne	.L255
+ 	movl	$.LC119, 4(%esp)
+ 	movl	$2, (%esp)
+ 	call	syslog
+ 	movl	$1, (%esp)
+ 	call	exit
+-.L251:
+-	jmp	.L241
+-.L249:
+-	cmpl	$0, -16(%ebp)
+-	jns	.L252
++.L255:
++	jmp	.L245
++.L253:
++	cmpl	$0, -48(%ebp)
++	jns	.L256
+ 	call	__errno_location
+ 	movl	(%eax), %eax
+ 	cmpl	$32, %eax
+-	je	.L253
++	je	.L257
+ 	call	__errno_location
+ 	movl	(%eax), %eax
+ 	cmpl	$22, %eax
+-	je	.L253
++	je	.L257
+ 	call	__errno_location
+ 	movl	(%eax), %eax
+ 	cmpl	$104, %eax
+-	je	.L253
+-	movl	-28(%ebp), %eax
++	je	.L257
++	movl	-36(%ebp), %eax
+ 	movl	172(%eax), %eax
+ 	movl	%eax, 8(%esp)
+ 	movl	$.LC120, 4(%esp)
+ 	movl	$3, (%esp)
+ 	call	syslog
+-.L253:
++.L257:
+ 	movl	12(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+ 	movl	8(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	clear_connection
+-	jmp	.L241
+-.L252:
++	jmp	.L245
++.L256:
+ 	movl	12(%ebp), %eax
+ 	movl	(%eax), %edx
+ 	movl	8(%ebp), %eax
+ 	movl	%edx, 68(%eax)
+-	movl	-28(%ebp), %eax
++	movl	-36(%ebp), %eax
+ 	movl	304(%eax), %eax
+ 	testl	%eax, %eax
+-	je	.L254
+-	movl	-16(%ebp), %edx
+-	movl	-28(%ebp), %eax
++	je	.L258
++	movl	-48(%ebp), %edx
++	movl	-36(%ebp), %eax
+ 	movl	304(%eax), %eax
+ 	cmpl	%eax, %edx
+-	jae	.L255
+-	movl	-28(%ebp), %eax
++	jae	.L259
++	movl	-36(%ebp), %eax
+ 	movl	304(%eax), %edx
+-	movl	-16(%ebp), %eax
++	movl	-48(%ebp), %eax
+ 	subl	%eax, %edx
+ 	movl	%edx, %eax
+ 	movl	%eax, -32(%ebp)
+ 	movl	-32(%ebp), %edx
+-	movl	-28(%ebp), %eax
++	movl	-36(%ebp), %eax
+ 	movl	252(%eax), %ecx
+-	movl	-16(%ebp), %eax
++	movl	-48(%ebp), %eax
+ 	addl	%eax, %ecx
+-	movl	-28(%ebp), %eax
++	movl	-36(%ebp), %eax
+ 	movl	252(%eax), %eax
+ 	movl	%edx, 8(%esp)
+ 	movl	%ecx, 4(%esp)
+ 	movl	%eax, (%esp)
+ 	call	memmove
+ 	movl	-32(%ebp), %edx
+-	movl	-28(%ebp), %eax
++	movl	-36(%ebp), %eax
+ 	movl	%edx, 304(%eax)
+-	movl	$0, -16(%ebp)
+-	jmp	.L254
+-.L255:
+-	movl	-16(%ebp), %edx
+-	movl	-28(%ebp), %eax
++	movl	$0, -48(%ebp)
++	jmp	.L258
++.L259:
++	movl	-48(%ebp), %edx
++	movl	-36(%ebp), %eax
+ 	movl	304(%eax), %eax
+ 	subl	%eax, %edx
+ 	movl	%edx, %eax
+-	movl	%eax, -16(%ebp)
+-	movl	-28(%ebp), %eax
++	movl	%eax, -48(%ebp)
++	movl	-36(%ebp), %eax
+ 	movl	$0, 304(%eax)
+-.L254:
++.L258:
+ 	movl	8(%ebp), %eax
+ 	movl	92(%eax), %edx
+-	movl	-16(%ebp), %eax
++	movl	-48(%ebp), %eax
+ 	addl	%eax, %edx
+ 	movl	8(%ebp), %eax
+ 	movl	%edx, 92(%eax)
+@@ -4107,15 +4148,15 @@
+ 	movl	8(%ebp), %edx
+ 	movl	8(%edx), %edx
+ 	movl	168(%edx), %ecx
+-	movl	-16(%ebp), %edx
++	movl	-48(%ebp), %edx
+ 	addl	%ecx, %edx
+ 	movl	%edx, 168(%eax)
+-	movl	$0, -24(%ebp)
+-	jmp	.L256
+-.L257:
++	movl	$0, -40(%ebp)
++	jmp	.L260
++.L261:
+ 	movl	throttles, %ecx
+ 	movl	8(%ebp), %eax
+-	movl	-24(%ebp), %edx
++	movl	-40(%ebp), %edx
+ 	movl	12(%eax,%edx,4), %eax
+ 	movl	%eax, %edx
+ 	movl	%edx, %eax
+@@ -4125,7 +4166,7 @@
+ 	addl	%eax, %ecx
+ 	movl	throttles, %ebx
+ 	movl	8(%ebp), %eax
+-	movl	-24(%ebp), %edx
++	movl	-40(%ebp), %edx
+ 	movl	12(%eax,%edx,4), %eax
+ 	movl	%eax, %edx
+ 	movl	%edx, %eax
+@@ -4134,66 +4175,66 @@
+ 	sall	$3, %eax
+ 	addl	%ebx, %eax
+ 	movl	16(%eax), %edx
+-	movl	-16(%ebp), %eax
++	movl	-48(%ebp), %eax
+ 	addl	%edx, %eax
+ 	movl	%eax, 16(%ecx)
+-	addl	$1, -24(%ebp)
+-.L256:
++	addl	$1, -40(%ebp)
++.L260:
+ 	movl	8(%ebp), %eax
+ 	movl	52(%eax), %eax
+-	cmpl	-24(%ebp), %eax
+-	jg	.L257
++	cmpl	-40(%ebp), %eax
++	jg	.L261
+ 	movl	8(%ebp), %eax
+ 	movl	92(%eax), %edx
+ 	movl	8(%ebp), %eax
+ 	movl	88(%eax), %eax
+ 	cmpl	%eax, %edx
+-	jl	.L258
++	jl	.L262
+ 	movl	12(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+ 	movl	8(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	finish_connection
+-	jmp	.L241
+-.L258:
++	jmp	.L245
++.L262:
+ 	movl	8(%ebp), %eax
+ 	movl	80(%eax), %eax
+ 	cmpl	$100, %eax
+-	jle	.L259
++	jle	.L263
+ 	movl	8(%ebp), %eax
+ 	movl	80(%eax), %eax
+ 	leal	-100(%eax), %edx
+ 	movl	8(%ebp), %eax
+ 	movl	%edx, 80(%eax)
+-.L259:
++.L263:
+ 	movl	8(%ebp), %eax
+ 	movl	56(%eax), %eax
+ 	cmpl	$-1, %eax
+-	je	.L241
++	je	.L245
+ 	movl	12(%ebp), %eax
+ 	movl	(%eax), %edx
+ 	movl	8(%ebp), %eax
+ 	movl	64(%eax), %eax
+ 	subl	%eax, %edx
+ 	movl	%edx, %eax
+-	movl	%eax, -20(%ebp)
+-	cmpl	$0, -20(%ebp)
+-	jne	.L261
+-	movl	$1, -20(%ebp)
+-.L261:
++	movl	%eax, -44(%ebp)
++	cmpl	$0, -44(%ebp)
++	jne	.L265
++	movl	$1, -44(%ebp)
++.L265:
+ 	movl	8(%ebp), %eax
+ 	movl	8(%eax), %eax
+ 	movl	168(%eax), %eax
+ 	cltd
+-	idivl	-20(%ebp)
++	idivl	-44(%ebp)
+ 	movl	%eax, %edx
+ 	movl	8(%ebp), %eax
+ 	movl	56(%eax), %eax
+ 	cmpl	%eax, %edx
+-	jle	.L241
++	jle	.L245
+ 	movl	8(%ebp), %eax
+ 	movl	$3, (%eax)
+-	movl	-28(%ebp), %eax
++	movl	-36(%ebp), %eax
+ 	movl	448(%eax), %eax
+ 	movl	%eax, (%esp)
+ 	call	fdwatch_del_fd
+@@ -4204,29 +4245,29 @@
+ 	movl	56(%edx), %esi
+ 	cltd
+ 	idivl	%esi
+-	subl	-20(%ebp), %eax
+-	movl	%eax, -36(%ebp)
++	subl	-44(%ebp), %eax
++	movl	%eax, -28(%ebp)
+ 	movl	8(%ebp), %eax
+-	movl	%eax, -40(%ebp)
++	movl	%eax, -24(%ebp)
+ 	movl	8(%ebp), %eax
+ 	movl	72(%eax), %eax
+ 	testl	%eax, %eax
+-	je	.L262
++	je	.L266
+ 	movl	$.LC118, 4(%esp)
+ 	movl	$3, (%esp)
+ 	call	syslog
+-.L262:
+-	cmpl	$0, -36(%ebp)
+-	jle	.L263
+-	movl	-36(%ebp), %eax
++.L266:
++	cmpl	$0, -28(%ebp)
++	jle	.L267
++	movl	-28(%ebp), %eax
+ 	imull	$1000, %eax, %eax
+-	jmp	.L264
+-.L263:
++	jmp	.L268
++.L267:
+ 	movl	$500, %eax
+-.L264:
++.L268:
+ 	movl	$0, 16(%esp)
+ 	movl	%eax, 12(%esp)
+-	movl	-40(%ebp), %eax
++	movl	-24(%ebp), %eax
+ 	movl	%eax, 8(%esp)
+ 	movl	$wakeup_connection, 4(%esp)
+ 	movl	12(%ebp), %eax
+@@ -4237,13 +4278,13 @@
+ 	movl	8(%ebp), %eax
+ 	movl	72(%eax), %eax
+ 	testl	%eax, %eax
+-	jne	.L241
++	jne	.L245
+ 	movl	$.LC119, 4(%esp)
+ 	movl	$2, (%esp)
+ 	call	syslog
+ 	movl	$1, (%esp)
+ 	call	exit
+-.L241:
++.L245:
+ 	addl	$80, %esp
+ 	popl	%ebx
+ 	.cfi_restore 3
+@@ -4265,8 +4306,15 @@
+ 	.cfi_offset 5, -8
+ 	movl	%esp, %ebp
+ 	.cfi_def_cfa_register 5
+-	subl	$4136, %esp
++	subl	$4152, %esp
+ 	movl	8(%ebp), %eax
++	movl	%eax, -4124(%ebp)
++	movl	12(%ebp), %eax
++	movl	%eax, -4128(%ebp)
++	movl	%gs:20, %eax
++	movl	%eax, -12(%ebp)
++	xorl	%eax, %eax
++	movl	-4124(%ebp), %eax
+ 	movl	8(%eax), %eax
+ 	movl	448(%eax), %eax
+ 	movl	$4096, 8(%esp)
+@@ -4274,26 +4322,31 @@
+ 	movl	%edx, 4(%esp)
+ 	movl	%eax, (%esp)
+ 	call	read
+-	movl	%eax, -12(%ebp)
+-	cmpl	$0, -12(%ebp)
+-	jns	.L267
++	movl	%eax, -4112(%ebp)
++	cmpl	$0, -4112(%ebp)
++	jns	.L271
+ 	call	__errno_location
+ 	movl	(%eax), %eax
+ 	cmpl	$4, %eax
+-	je	.L266
++	je	.L270
+ 	call	__errno_location
+ 	movl	(%eax), %eax
+ 	cmpl	$11, %eax
+-	je	.L266
+-.L267:
+-	cmpl	$0, -12(%ebp)
+-	jg	.L266
+-	movl	12(%ebp), %eax
++	je	.L270
++.L271:
++	cmpl	$0, -4112(%ebp)
++	jg	.L270
++	movl	-4128(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	8(%ebp), %eax
++	movl	-4124(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	really_clear_connection
+-.L266:
++.L270:
++	movl	-12(%ebp), %eax
++	xorl	%gs:20, %eax
++	je	.L275
++	call	__stack_chk_fail
++.L275:
+ 	leave
+ 	.cfi_restore 5
+ 	.cfi_def_cfa 4, 4
+@@ -4328,14 +4381,14 @@
+ 	movl	60(%eax), %edx
+ 	movl	8(%ebp), %eax
+ 	movl	%edx, 56(%eax)
+-	movl	$0, -12(%ebp)
+-	jmp	.L272
+-.L282:
++	movl	$0, -16(%ebp)
++	jmp	.L277
++.L287:
+ 	movl	8(%ebp), %eax
+ 	movl	8(%eax), %eax
+ 	movl	188(%eax), %ecx
+ 	movl	throttles, %ebx
+-	movl	-12(%ebp), %edx
++	movl	-16(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4346,9 +4399,9 @@
+ 	movl	%eax, (%esp)
+ 	call	match
+ 	testl	%eax, %eax
+-	je	.L273
++	je	.L278
+ 	movl	throttles, %ecx
+-	movl	-12(%ebp), %edx
++	movl	-16(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4356,7 +4409,7 @@
+ 	addl	%ecx, %eax
+ 	movl	12(%eax), %ecx
+ 	movl	throttles, %ebx
+-	movl	-12(%ebp), %edx
++	movl	-16(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4365,12 +4418,12 @@
+ 	movl	4(%eax), %eax
+ 	addl	%eax, %eax
+ 	cmpl	%eax, %ecx
+-	jle	.L274
++	jle	.L279
+ 	movl	$0, %eax
+-	jmp	.L275
+-.L274:
++	jmp	.L280
++.L279:
+ 	movl	throttles, %ecx
+-	movl	-12(%ebp), %edx
++	movl	-16(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4378,7 +4431,7 @@
+ 	addl	%ecx, %eax
+ 	movl	12(%eax), %ecx
+ 	movl	throttles, %ebx
+-	movl	-12(%ebp), %edx
++	movl	-16(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4386,12 +4439,12 @@
+ 	addl	%ebx, %eax
+ 	movl	8(%eax), %eax
+ 	cmpl	%eax, %ecx
+-	jge	.L276
++	jge	.L281
+ 	movl	$0, %eax
+-	jmp	.L275
+-.L276:
++	jmp	.L280
++.L281:
+ 	movl	throttles, %ecx
+-	movl	-12(%ebp), %edx
++	movl	-16(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4399,29 +4452,29 @@
+ 	addl	%ecx, %eax
+ 	movl	20(%eax), %eax
+ 	testl	%eax, %eax
+-	jns	.L277
++	jns	.L282
+ 	movl	$.LC121, 4(%esp)
+ 	movl	$3, (%esp)
+ 	call	syslog
+ 	movl	throttles, %ecx
+-	movl	-12(%ebp), %edx
++	movl	-16(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+ 	sall	$3, %eax
+ 	addl	%ecx, %eax
+ 	movl	$0, 20(%eax)
+-.L277:
++.L282:
+ 	movl	8(%ebp), %eax
+ 	movl	52(%eax), %eax
+ 	leal	1(%eax), %ecx
+ 	movl	8(%ebp), %edx
+ 	movl	%ecx, 52(%edx)
+ 	movl	8(%ebp), %edx
+-	movl	-12(%ebp), %ecx
++	movl	-16(%ebp), %ecx
+ 	movl	%ecx, 12(%edx,%eax,4)
+ 	movl	throttles, %ecx
+-	movl	-12(%ebp), %edx
++	movl	-16(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4431,7 +4484,7 @@
+ 	addl	$1, %edx
+ 	movl	%edx, 20(%eax)
+ 	movl	throttles, %ecx
+-	movl	-12(%ebp), %edx
++	movl	-16(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4439,7 +4492,7 @@
+ 	addl	%ecx, %eax
+ 	movl	4(%eax), %ecx
+ 	movl	throttles, %ebx
+-	movl	-12(%ebp), %edx
++	movl	-16(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4449,62 +4502,62 @@
+ 	movl	%ecx, %eax
+ 	cltd
+ 	idivl	%esi
+-	movl	%eax, -16(%ebp)
++	movl	%eax, -12(%ebp)
+ 	movl	8(%ebp), %eax
+ 	movl	56(%eax), %eax
+ 	cmpl	$-1, %eax
+-	jne	.L278
++	jne	.L283
+ 	movl	8(%ebp), %eax
+-	movl	-16(%ebp), %edx
++	movl	-12(%ebp), %edx
+ 	movl	%edx, 56(%eax)
+-	jmp	.L279
+-.L278:
++	jmp	.L284
++.L283:
+ 	movl	8(%ebp), %eax
+ 	movl	56(%eax), %edx
+-	movl	-16(%ebp), %eax
++	movl	-12(%ebp), %eax
+ 	cmpl	%eax, %edx
+ 	cmovg	%eax, %edx
+ 	movl	8(%ebp), %eax
+ 	movl	%edx, 56(%eax)
+-.L279:
++.L284:
+ 	movl	throttles, %ecx
+-	movl	-12(%ebp), %edx
++	movl	-16(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+ 	sall	$3, %eax
+ 	addl	%ecx, %eax
+ 	movl	8(%eax), %eax
+-	movl	%eax, -16(%ebp)
++	movl	%eax, -12(%ebp)
+ 	movl	8(%ebp), %eax
+ 	movl	60(%eax), %eax
+ 	cmpl	$-1, %eax
+-	jne	.L280
++	jne	.L285
+ 	movl	8(%ebp), %eax
+-	movl	-16(%ebp), %edx
++	movl	-12(%ebp), %edx
+ 	movl	%edx, 60(%eax)
+-	jmp	.L273
+-.L280:
++	jmp	.L278
++.L285:
+ 	movl	8(%ebp), %eax
+ 	movl	60(%eax), %edx
+-	movl	-16(%ebp), %eax
++	movl	-12(%ebp), %eax
+ 	cmpl	%eax, %edx
+ 	cmovl	%eax, %edx
+ 	movl	8(%ebp), %eax
+ 	movl	%edx, 60(%eax)
+-.L273:
+-	addl	$1, -12(%ebp)
+-.L272:
++.L278:
++	addl	$1, -16(%ebp)
++.L277:
+ 	movl	numthrottles, %eax
+-	cmpl	%eax, -12(%ebp)
+-	jge	.L281
++	cmpl	%eax, -16(%ebp)
++	jge	.L286
+ 	movl	8(%ebp), %eax
+ 	movl	52(%eax), %eax
+ 	cmpl	$9, %eax
+-	jle	.L282
+-.L281:
++	jle	.L287
++.L286:
+ 	movl	$1, %eax
+-.L275:
++.L280:
+ 	addl	$32, %esp
+ 	popl	%ebx
+ 	.cfi_restore 3
+@@ -4528,8 +4581,8 @@
+ 	.cfi_def_cfa_register 5
+ 	subl	$16, %esp
+ 	movl	$0, -4(%ebp)
+-	jmp	.L284
+-.L285:
++	jmp	.L289
++.L290:
+ 	movl	throttles, %ecx
+ 	movl	8(%ebp), %eax
+ 	movl	-4(%ebp), %edx
+@@ -4544,11 +4597,11 @@
+ 	subl	$1, %edx
+ 	movl	%edx, 20(%eax)
+ 	addl	$1, -4(%ebp)
+-.L284:
++.L289:
+ 	movl	8(%ebp), %eax
+ 	movl	52(%eax), %eax
+ 	cmpl	-4(%ebp), %eax
+-	jg	.L285
++	jg	.L290
+ 	leave
+ 	.cfi_restore 5
+ 	.cfi_def_cfa 4, 4
+@@ -4583,18 +4636,18 @@
+ 	.cfi_offset 7, -12
+ 	.cfi_offset 6, -16
+ 	.cfi_offset 3, -20
+-	movl	$0, -28(%ebp)
+-	jmp	.L287
+-.L291:
++	movl	$0, -44(%ebp)
++	jmp	.L292
++.L296:
+ 	movl	throttles, %ecx
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+ 	sall	$3, %eax
+ 	leal	(%ecx,%eax), %ebx
+ 	movl	throttles, %ecx
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4603,7 +4656,7 @@
+ 	movl	12(%eax), %eax
+ 	leal	(%eax,%eax), %esi
+ 	movl	throttles, %ecx
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4624,7 +4677,7 @@
+ 	movl	%edx, %eax
+ 	movl	%eax, 12(%ebx)
+ 	movl	throttles, %ecx
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4632,7 +4685,7 @@
+ 	addl	%ecx, %eax
+ 	movl	$0, 16(%eax)
+ 	movl	throttles, %ecx
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4640,7 +4693,7 @@
+ 	addl	%ecx, %eax
+ 	movl	12(%eax), %ecx
+ 	movl	throttles, %ebx
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4648,9 +4701,9 @@
+ 	addl	%ebx, %eax
+ 	movl	4(%eax), %eax
+ 	cmpl	%eax, %ecx
+-	jle	.L288
++	jle	.L293
+ 	movl	throttles, %ecx
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4658,9 +4711,9 @@
+ 	addl	%ecx, %eax
+ 	movl	20(%eax), %eax
+ 	testl	%eax, %eax
+-	je	.L288
++	je	.L293
+ 	movl	throttles, %ecx
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4668,7 +4721,7 @@
+ 	addl	%ecx, %eax
+ 	movl	12(%eax), %ecx
+ 	movl	throttles, %ebx
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4677,9 +4730,9 @@
+ 	movl	4(%eax), %eax
+ 	addl	%eax, %eax
+ 	cmpl	%eax, %ecx
+-	jle	.L289
++	jle	.L294
+ 	movl	throttles, %ecx
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4687,7 +4740,7 @@
+ 	addl	%ecx, %eax
+ 	movl	20(%eax), %esi
+ 	movl	throttles, %ecx
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4695,7 +4748,7 @@
+ 	addl	%ecx, %eax
+ 	movl	4(%eax), %ebx
+ 	movl	throttles, %ecx
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4703,7 +4756,7 @@
+ 	addl	%ecx, %eax
+ 	movl	12(%eax), %ecx
+ 	movl	throttles, %edi
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4714,15 +4767,15 @@
+ 	movl	%ebx, 20(%esp)
+ 	movl	%ecx, 16(%esp)
+ 	movl	%eax, 12(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-44(%ebp), %eax
+ 	movl	%eax, 8(%esp)
+ 	movl	$.LC122, 4(%esp)
+ 	movl	$5, (%esp)
+ 	call	syslog
+-	jmp	.L288
+-.L289:
++	jmp	.L293
++.L294:
+ 	movl	throttles, %ecx
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4730,7 +4783,7 @@
+ 	addl	%ecx, %eax
+ 	movl	20(%eax), %esi
+ 	movl	throttles, %ecx
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4738,7 +4791,7 @@
+ 	addl	%ecx, %eax
+ 	movl	4(%eax), %ebx
+ 	movl	throttles, %ecx
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4746,7 +4799,7 @@
+ 	addl	%ecx, %eax
+ 	movl	12(%eax), %ecx
+ 	movl	throttles, %edi
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4757,14 +4810,14 @@
+ 	movl	%ebx, 20(%esp)
+ 	movl	%ecx, 16(%esp)
+ 	movl	%eax, 12(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-44(%ebp), %eax
+ 	movl	%eax, 8(%esp)
+ 	movl	$.LC123, 4(%esp)
+ 	movl	$6, (%esp)
+ 	call	syslog
+-.L288:
++.L293:
+ 	movl	throttles, %ecx
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4772,7 +4825,7 @@
+ 	addl	%ecx, %eax
+ 	movl	12(%eax), %ecx
+ 	movl	throttles, %ebx
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4780,9 +4833,9 @@
+ 	addl	%ebx, %eax
+ 	movl	8(%eax), %eax
+ 	cmpl	%eax, %ecx
+-	jge	.L290
++	jge	.L295
+ 	movl	throttles, %ecx
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4790,9 +4843,9 @@
+ 	addl	%ecx, %eax
+ 	movl	20(%eax), %eax
+ 	testl	%eax, %eax
+-	je	.L290
++	je	.L295
+ 	movl	throttles, %ecx
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4800,7 +4853,7 @@
+ 	addl	%ecx, %eax
+ 	movl	20(%eax), %esi
+ 	movl	throttles, %ecx
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4808,7 +4861,7 @@
+ 	addl	%ecx, %eax
+ 	movl	8(%eax), %ebx
+ 	movl	throttles, %ecx
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4816,7 +4869,7 @@
+ 	addl	%ecx, %eax
+ 	movl	12(%eax), %ecx
+ 	movl	throttles, %edi
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4827,20 +4880,20 @@
+ 	movl	%ebx, 20(%esp)
+ 	movl	%ecx, 16(%esp)
+ 	movl	%eax, 12(%esp)
+-	movl	-28(%ebp), %eax
++	movl	-44(%ebp), %eax
+ 	movl	%eax, 8(%esp)
+ 	movl	$.LC124, 4(%esp)
+ 	movl	$5, (%esp)
+ 	call	syslog
+-.L290:
+-	addl	$1, -28(%ebp)
+-.L287:
++.L295:
++	addl	$1, -44(%ebp)
++.L292:
+ 	movl	numthrottles, %eax
+-	cmpl	%eax, -28(%ebp)
+-	jl	.L291
++	cmpl	%eax, -44(%ebp)
++	jl	.L296
+ 	movl	$0, -36(%ebp)
+-	jmp	.L292
+-.L299:
++	jmp	.L297
++.L304:
+ 	movl	connects, %ecx
+ 	movl	-36(%ebp), %edx
+ 	movl	%edx, %eax
+@@ -4848,27 +4901,27 @@
+ 	addl	%edx, %eax
+ 	sall	$5, %eax
+ 	addl	%ecx, %eax
+-	movl	%eax, -40(%ebp)
+-	movl	-40(%ebp), %eax
++	movl	%eax, -32(%ebp)
++	movl	-32(%ebp), %eax
+ 	movl	(%eax), %eax
+ 	cmpl	$2, %eax
+-	je	.L293
+-	movl	-40(%ebp), %eax
++	je	.L298
++	movl	-32(%ebp), %eax
+ 	movl	(%eax), %eax
+ 	cmpl	$3, %eax
+-	jne	.L294
+-.L293:
+-	movl	-40(%ebp), %eax
+-	movl	$-1, 56(%eax)
+-	movl	$0, -32(%ebp)
+-	jmp	.L295
++	jne	.L299
+ .L298:
+-	movl	-40(%ebp), %eax
+-	movl	-32(%ebp), %edx
++	movl	-32(%ebp), %eax
++	movl	$-1, 56(%eax)
++	movl	$0, -40(%ebp)
++	jmp	.L300
++.L303:
++	movl	-32(%ebp), %eax
++	movl	-40(%ebp), %edx
+ 	movl	12(%eax,%edx,4), %eax
+-	movl	%eax, -28(%ebp)
++	movl	%eax, -44(%ebp)
+ 	movl	throttles, %ecx
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4876,7 +4929,7 @@
+ 	addl	%ecx, %eax
+ 	movl	4(%eax), %ecx
+ 	movl	throttles, %ebx
+-	movl	-28(%ebp), %edx
++	movl	-44(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+@@ -4886,36 +4939,36 @@
+ 	movl	%ecx, %eax
+ 	cltd
+ 	idivl	%edi
+-	movl	%eax, -44(%ebp)
+-	movl	-40(%ebp), %eax
++	movl	%eax, -28(%ebp)
++	movl	-32(%ebp), %eax
+ 	movl	56(%eax), %eax
+ 	cmpl	$-1, %eax
+-	jne	.L296
+-	movl	-40(%ebp), %eax
+-	movl	-44(%ebp), %edx
++	jne	.L301
++	movl	-32(%ebp), %eax
++	movl	-28(%ebp), %edx
+ 	movl	%edx, 56(%eax)
+-	jmp	.L297
+-.L296:
+-	movl	-40(%ebp), %eax
++	jmp	.L302
++.L301:
++	movl	-32(%ebp), %eax
+ 	movl	56(%eax), %edx
+-	movl	-44(%ebp), %eax
++	movl	-28(%ebp), %eax
+ 	cmpl	%eax, %edx
+ 	cmovg	%eax, %edx
+-	movl	-40(%ebp), %eax
++	movl	-32(%ebp), %eax
+ 	movl	%edx, 56(%eax)
+-.L297:
+-	addl	$1, -32(%ebp)
+-.L295:
+-	movl	-40(%ebp), %eax
++.L302:
++	addl	$1, -40(%ebp)
++.L300:
++	movl	-32(%ebp), %eax
+ 	movl	52(%eax), %eax
+-	cmpl	-32(%ebp), %eax
+-	jg	.L298
+-.L294:
++	cmpl	-40(%ebp), %eax
++	jg	.L303
++.L299:
+ 	addl	$1, -36(%ebp)
+-.L292:
++.L297:
+ 	movl	max_connects, %eax
+ 	cmpl	%eax, -36(%ebp)
+-	jl	.L299
++	jl	.L304
+ 	addl	$76, %esp
+ 	popl	%ebx
+ 	.cfi_restore 3
+@@ -4977,18 +5030,18 @@
+ 	movl	8(%ebp), %eax
+ 	movl	72(%eax), %eax
+ 	testl	%eax, %eax
+-	je	.L302
++	je	.L307
+ 	movl	8(%ebp), %eax
+ 	movl	72(%eax), %eax
+ 	movl	%eax, (%esp)
+ 	call	tmr_cancel
+ 	movl	8(%ebp), %eax
+ 	movl	$0, 72(%eax)
+-.L302:
++.L307:
+ 	movl	8(%ebp), %eax
+ 	movl	(%eax), %eax
+ 	cmpl	$4, %eax
+-	jne	.L303
++	jne	.L308
+ 	movl	8(%ebp), %eax
+ 	movl	76(%eax), %eax
+ 	movl	%eax, (%esp)
+@@ -4998,22 +5051,22 @@
+ 	movl	8(%ebp), %eax
+ 	movl	8(%eax), %eax
+ 	movl	$0, 356(%eax)
+-.L303:
++.L308:
+ 	movl	8(%ebp), %eax
+ 	movl	8(%eax), %eax
+ 	movl	356(%eax), %eax
+ 	testl	%eax, %eax
+-	je	.L304
++	je	.L309
+ 	movl	8(%ebp), %eax
+ 	movl	(%eax), %eax
+ 	cmpl	$3, %eax
+-	je	.L305
++	je	.L310
+ 	movl	8(%ebp), %eax
+ 	movl	8(%eax), %eax
+ 	movl	448(%eax), %eax
+ 	movl	%eax, (%esp)
+ 	call	fdwatch_del_fd
+-.L305:
++.L310:
+ 	movl	8(%ebp), %eax
+ 	movl	$4, (%eax)
+ 	movl	8(%ebp), %eax
+@@ -5035,11 +5088,11 @@
+ 	movl	8(%ebp), %eax
+ 	movl	76(%eax), %eax
+ 	testl	%eax, %eax
+-	je	.L306
++	je	.L311
+ 	movl	$.LC125, 4(%esp)
+ 	movl	$3, (%esp)
+ 	call	syslog
+-.L306:
++.L311:
+ 	movl	$0, 16(%esp)
+ 	movl	$500, 12(%esp)
+ 	movl	-12(%ebp), %eax
+@@ -5053,19 +5106,19 @@
+ 	movl	8(%ebp), %eax
+ 	movl	76(%eax), %eax
+ 	testl	%eax, %eax
+-	jne	.L301
++	jne	.L306
+ 	movl	$.LC126, 4(%esp)
+ 	movl	$2, (%esp)
+ 	call	syslog
+ 	movl	$1, (%esp)
+ 	call	exit
+-.L304:
++.L309:
+ 	movl	12(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+ 	movl	8(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	really_clear_connection
+-.L301:
++.L306:
+ 	leave
+ 	.cfi_restore 5
+ 	.cfi_def_cfa 4, 4
+@@ -5092,13 +5145,13 @@
+ 	movl	8(%ebp), %eax
+ 	movl	(%eax), %eax
+ 	cmpl	$3, %eax
+-	je	.L309
++	je	.L314
+ 	movl	8(%ebp), %eax
+ 	movl	8(%eax), %eax
+ 	movl	448(%eax), %eax
+ 	movl	%eax, (%esp)
+ 	call	fdwatch_del_fd
+-.L309:
++.L314:
+ 	movl	8(%ebp), %eax
+ 	movl	8(%eax), %eax
+ 	movl	12(%ebp), %edx
+@@ -5113,14 +5166,14 @@
+ 	movl	8(%ebp), %eax
+ 	movl	76(%eax), %eax
+ 	testl	%eax, %eax
+-	je	.L310
++	je	.L315
+ 	movl	8(%ebp), %eax
+ 	movl	76(%eax), %eax
+ 	movl	%eax, (%esp)
+ 	call	tmr_cancel
+ 	movl	8(%ebp), %eax
+ 	movl	$0, 76(%eax)
+-.L310:
++.L315:
+ 	movl	8(%ebp), %eax
+ 	movl	$0, (%eax)
+ 	movl	first_free_connect, %edx
+@@ -5161,36 +5214,36 @@
+ 	movl	%esp, %ebp
+ 	.cfi_def_cfa_register 5
+ 	subl	$56, %esp
+-	movl	$0, -12(%ebp)
+-	jmp	.L312
+-.L318:
++	movl	$0, -16(%ebp)
++	jmp	.L317
++.L323:
+ 	movl	connects, %ecx
+-	movl	-12(%ebp), %edx
++	movl	-16(%ebp), %edx
+ 	movl	%edx, %eax
+ 	addl	%eax, %eax
+ 	addl	%edx, %eax
+ 	sall	$5, %eax
+ 	addl	%ecx, %eax
+-	movl	%eax, -16(%ebp)
+-	movl	-16(%ebp), %eax
++	movl	%eax, -12(%ebp)
++	movl	-12(%ebp), %eax
+ 	movl	(%eax), %eax
+ 	cmpl	$1, %eax
+-	je	.L314
++	je	.L319
+ 	cmpl	$1, %eax
+-	jl	.L313
++	jl	.L318
+ 	cmpl	$3, %eax
+-	jg	.L313
+-	jmp	.L319
+-.L314:
++	jg	.L318
++	jmp	.L324
++.L319:
+ 	movl	12(%ebp), %eax
+ 	movl	(%eax), %edx
+-	movl	-16(%ebp), %eax
++	movl	-12(%ebp), %eax
+ 	movl	68(%eax), %eax
+ 	subl	%eax, %edx
+ 	movl	%edx, %eax
+ 	cmpl	$59, %eax
+-	jle	.L316
+-	movl	-16(%ebp), %eax
++	jle	.L321
++	movl	-12(%ebp), %eax
+ 	movl	8(%eax), %eax
+ 	addl	$8, %eax
+ 	movl	%eax, (%esp)
+@@ -5201,7 +5254,7 @@
+ 	call	syslog
+ 	movl	httpd_err408form, %ecx
+ 	movl	httpd_err408title, %edx
+-	movl	-16(%ebp), %eax
++	movl	-12(%ebp), %eax
+ 	movl	8(%eax), %eax
+ 	movl	$.LC45, 20(%esp)
+ 	movl	%ecx, 16(%esp)
+@@ -5212,22 +5265,22 @@
+ 	call	httpd_send_err
+ 	movl	12(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-16(%ebp), %eax
++	movl	-12(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	finish_connection
+-	jmp	.L313
+-.L316:
+-	jmp	.L313
+-.L319:
++	jmp	.L318
++.L321:
++	jmp	.L318
++.L324:
+ 	movl	12(%ebp), %eax
+ 	movl	(%eax), %edx
+-	movl	-16(%ebp), %eax
++	movl	-12(%ebp), %eax
+ 	movl	68(%eax), %eax
+ 	subl	%eax, %edx
+ 	movl	%edx, %eax
+ 	cmpl	$299, %eax
+-	jle	.L317
+-	movl	-16(%ebp), %eax
++	jle	.L322
++	movl	-12(%ebp), %eax
+ 	movl	8(%eax), %eax
+ 	addl	$8, %eax
+ 	movl	%eax, (%esp)
+@@ -5238,19 +5291,19 @@
+ 	call	syslog
+ 	movl	12(%ebp), %eax
+ 	movl	%eax, 4(%esp)
+-	movl	-16(%ebp), %eax
++	movl	-12(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	clear_connection
+-	jmp	.L320
+-.L317:
+-.L320:
++	jmp	.L325
++.L322:
++.L325:
+ 	nop
+-.L313:
+-	addl	$1, -12(%ebp)
+-.L312:
++.L318:
++	addl	$1, -16(%ebp)
++.L317:
+ 	movl	max_connects, %eax
+-	cmpl	%eax, -12(%ebp)
+-	jl	.L318
++	cmpl	%eax, -16(%ebp)
++	jl	.L323
+ 	leave
+ 	.cfi_restore 5
+ 	.cfi_def_cfa 4, 4
+@@ -5275,7 +5328,7 @@
+ 	movl	-12(%ebp), %eax
+ 	movl	(%eax), %eax
+ 	cmpl	$3, %eax
+-	jne	.L321
++	jne	.L326
+ 	movl	-12(%ebp), %eax
+ 	movl	$2, (%eax)
+ 	movl	-12(%ebp), %eax
+@@ -5286,7 +5339,7 @@
+ 	movl	%edx, 4(%esp)
+ 	movl	%eax, (%esp)
+ 	call	fdwatch_add_fd
+-.L321:
++.L326:
+ 	leave
+ 	.cfi_restore 5
+ 	.cfi_def_cfa 4, 4
+@@ -5378,53 +5431,53 @@
+ 	.cfi_def_cfa_register 5
+ 	subl	$56, %esp
+ 	cmpl	$0, 8(%ebp)
+-	jne	.L327
++	jne	.L332
+ 	movl	$0, 4(%esp)
+-	leal	-28(%ebp), %eax
++	leal	-16(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	gettimeofday
+-	leal	-28(%ebp), %eax
++	leal	-16(%ebp), %eax
+ 	movl	%eax, 8(%ebp)
+-.L327:
++.L332:
+ 	movl	8(%ebp), %eax
+ 	movl	(%eax), %eax
+-	movl	%eax, -16(%ebp)
++	movl	%eax, -24(%ebp)
+ 	movl	start_time, %eax
+-	movl	-16(%ebp), %edx
++	movl	-24(%ebp), %edx
+ 	subl	%eax, %edx
+ 	movl	%edx, %eax
+ 	movl	%eax, -20(%ebp)
+ 	movl	stats_time, %eax
+-	movl	-16(%ebp), %edx
++	movl	-24(%ebp), %edx
+ 	subl	%eax, %edx
+ 	movl	%edx, %eax
+-	movl	%eax, -12(%ebp)
+-	cmpl	$0, -12(%ebp)
+-	jne	.L328
+-	movl	$1, -12(%ebp)
+-.L328:
+-	movl	-16(%ebp), %eax
++	movl	%eax, -28(%ebp)
++	cmpl	$0, -28(%ebp)
++	jne	.L333
++	movl	$1, -28(%ebp)
++.L333:
++	movl	-24(%ebp), %eax
+ 	movl	%eax, stats_time
+-	movl	-12(%ebp), %eax
++	movl	-28(%ebp), %eax
+ 	movl	%eax, 12(%esp)
+ 	movl	-20(%ebp), %eax
+ 	movl	%eax, 8(%esp)
+ 	movl	$.LC129, 4(%esp)
+ 	movl	$6, (%esp)
+ 	call	syslog
+-	movl	-12(%ebp), %eax
++	movl	-28(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	thttpd_logstats
+-	movl	-12(%ebp), %eax
++	movl	-28(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	httpd_logstats
+-	movl	-12(%ebp), %eax
++	movl	-28(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	mmc_logstats
+-	movl	-12(%ebp), %eax
++	movl	-28(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	fdwatch_logstats
+-	movl	-12(%ebp), %eax
++	movl	-28(%ebp), %eax
+ 	movl	%eax, (%esp)
+ 	call	tmr_logstats
+ 	leave
+@@ -5454,7 +5507,7 @@
+ 	.cfi_offset 6, -12
+ 	.cfi_offset 3, -16
+ 	cmpl	$0, 8(%ebp)
+-	jle	.L330
++	jle	.L335
+ 	movl	httpd_conn_count, %esi
+ 	movl	stats_bytes, %eax
+ 	movl	%eax, -12(%ebp)
+@@ -5481,7 +5534,7 @@
+ 	movl	$.LC130, 4(%esp)
+ 	movl	$6, (%esp)
+ 	call	syslog
+-.L330:
++.L335:
+ 	movl	$0, stats_connections
+ 	movl	$0, stats_bytes
+ 	movl	$0, stats_simultaneous

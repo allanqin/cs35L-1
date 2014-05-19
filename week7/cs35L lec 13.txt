@@ -1,0 +1,69 @@
+cs35L week 7 lec 13
+===============================================================
+System call programming and debugging
+===============================================================
+-The system call interface is very hardware/OS specific
+	-using the stdlib is more portable because of this
+
+-read/write returns how many bytes were read/written (ssize_t is like an unsigned int)
+-open returns an int file descriptor. Use close on that to close the file.
+fstat returns metadata on a file of the filedes argument
+-The reason using stdlib calls are faster is since, for instance, getchar() will use system calls to 
+ read a whole chunk of memory to a buffer. Then, accessing from that buffer is a lot faster than repeated
+ system calls.
+-system calls are expensive because of the overhead in switching between user and supervisor modes
+
+-file descriptors:
+	0 stdin
+	1 stdout
+	2 stderr
+
+LAB:
+-to make the large test file just output some random text many times, for example. 
+	-use a C file, shell script, etc
+	-use du -sh <file> to see the file size
+
+-use `time <file>` to get some time stats
+-use strace to find which system calls are being made and see the difference between catu and catb
+	-catu will be making a system call for each character
+	-catb will make less system calls due to buffering
+-for strace, use grep to analyze the instance of read/write
+	-or can use -c option to have a summary output
+	
+Need to run these 4 commands with strace and time (8 total commands):
+	//note: run strace -o <filename> so that the output is put into a file
+	//rather than stderr
+./catb < bigfile.txt (writing to terminal)
+./catb < bigfile.txt > out	(writing to file)
+./catu < bigfile.txt	
+./catu < bigfile.txt > out
+	//understand and interpert the results for the lab log
+		
+-with `time`, sys + user does not necessarily equal real
+	-is greater than real with multithreaded processes
+	-is less than usually otherwise due to some delays in reading from disk, etc.
+	
+HOMEWORK:
+-only using stdlib for fprintf to write to stderr
+	-all other calls are system calls
+-can use fstat to use find out the size of the input file
+	-then can use malloc do allocate exactly enough memory
+	-see iPhone picture for how to use fstat
+		// (see below)
+
+-CAUTION: if fstat detects a regular file, use fstat again after you have supposedly
+read all the contents of the file to make sure the file didn't mutate while
+you were reading it. If the size is different, you may have to realloc.
+	
+In fstat:
+-if stdin file is a regular file, malloc the whole size
+e.g.
+	./a.out < sample.c	//will be a regular stdin file and can malloc in one shot
+	
+-else if not a regular file, must do same thing as in week 5 
+e.g.
+	cat sample.c | ./a.out	//won't be a regular stdin file and must use realloc
+	
+-qsort has an average complexity of(n log n).
+	-run some tests with different numbers of lines to see if it roughly matches this
+	-try to predict some future results as per lab

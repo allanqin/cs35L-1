@@ -1,0 +1,7 @@
+Questions about this lab:
+
+Is the gpg --armor command what creates the message digest?
+
+Notes:
+To gpg --verify hw.tar.gz.sig hw.tar.gz, one must be in their home directory.
+It doesn't work in the Desktop directory for some reason.

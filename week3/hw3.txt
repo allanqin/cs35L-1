@@ -1,0 +1,25 @@
+Answers to Q1-Q4:
+-------------------------------
+Q1. Brady removed the "case_longiso_time_style:" line because it was an iden-
+tical case. The first instance of the case would've fell through the the
+repeated case so Brady was just cleaning up the code. It was necessarily re-
+quired due to the fall through effect described above.
+
+
+Q2. With the patched version of the coreutils-7.6, the only thing that changed
+was that we made the date show the traditional Unix format. Traditional doesn't
+necessarily mean better. Things to watch out for are any other commands which
+might have relied on the date being shown in the old format rather than the
+patched version. Also, users in a different locale may not recognize the months
+spelled in English or maybe order their dates in a different way. 
+
+
+Q3. When a file like /dev/null is passed to randline.py, an error is shown. It
+says "IndexError: list index out of range". That's because the file that we
+passed in as an argument was totally empty so when the script attempted to
+index the contents, an exception was thrown.
+
+Q4. When we ran the script using the python3 interpreter rather than python2,
+there is an error. The error is caused by a difference in syntax interpretaion
+between the two interpreters because the message shown is "SyntaxError: invalid
+syntax".  

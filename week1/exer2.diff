@@ -1,0 +1,31 @@
+--- exer1.html	2014-01-07 22:18:47.308703519 -0800
++++ exer2.html	2014-01-07 22:27:34.220687945 -0800
+@@ -13,7 +13,7 @@
+ 
+ <h2>Laboratory: Linux and Emacs scavenger hunt</h2>
+ 
+-<!-- diff，在UNIX系統上的一個工具程式，它可以比較兩個檔案之間的不同。通常它被用來比較同一個檔案，在不同版本間的差異。它可以產生一個擴展名為.diff或.patch的檔案，這個檔案可以被另一個工具程式patch來使用。-->
++
+ 
+ <p>Instructions: Use the commands that you learned in class to find
+ answers to these questions. Don't use a search engine like Google, and
+@@ -252,9 +252,7 @@
+ 
+ <h2>Submit</h2>
+ 
+-<!-- You can learn more about HTML comments at
+-	<http://en.wikipedia.org/wiki/HTML_comment#Comments>.
+-	-->
++
+ 
+ <p>Submit the following files.</p>
+ 
+@@ -290,7 +288,7 @@
+ <pre><samp><a href='http://en.wikipedia.org/wiki/AWK'>awk</a> '/\r/ || 80 &lt; length' lab1.txt hw1.txt
+ </samp></pre>
+ 
+-<p>should output nothing<!---->.</p>
++<p>should output nothing.</p>
+ 
+ <hr>
+ <address>

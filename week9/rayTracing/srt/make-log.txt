@@ -1,0 +1,53 @@
+rm -f *.o *.ppm *.tmp srt srt.tgz
+gcc -std=gnu99 -g -O2 -Wall -Wextra -Wno-unused-parameter   -c -o main.o main.c
+main.c: In function 'threadfunction':
+main.c:167:15: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
+     int end = (int) arg + sliceSize;
+               ^
+main.c:188:17: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
+     for( int px=(int)arg; px<end; ++px )
+                 ^
+main.c: In function 'main':
+main.c:295:62: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
+         rs = pthread_create(&threadID[k], 0, threadfunction, (void*) starts[k]);    //use &threadID[k], stupid. you forgot ampersand
+                                                              ^
+main.c:295:9: warning: passing argument 3 of 'pthread_create' from incompatible pointer type [enabled by default]
+         rs = pthread_create(&threadID[k], 0, threadfunction, (void*) starts[k]);    //use &threadID[k], stupid. you forgot ampersand
+         ^
+In file included from main.c:28:0:
+/usr/include/pthread.h:225:12: note: expected 'void * (*)(void *)' but argument is of type 'void (*)(void *)'
+ extern int pthread_create (pthread_t *__restrict __newthread,
+            ^
+main.c:298:13: warning: passing argument 1 of 'printf' from incompatible pointer type [enabled by default]
+             printf(stderr, "Error creating thread\n");
+             ^
+In file included from main.c:24:0:
+/usr/include/stdio.h:361:12: note: expected 'const char * restrict' but argument is of type 'struct _IO_FILE *'
+ extern int printf (__const char *__restrict __format, ...);
+            ^
+gcc -std=gnu99 -g -O2 -Wall -Wextra -Wno-unused-parameter   -c -o raymath.o raymath.c
+gcc -std=gnu99 -g -O2 -Wall -Wextra -Wno-unused-parameter   -c -o shaders.o shaders.c
+gcc -std=gnu99 -g -O2 -Wall -Wextra -Wno-unused-parameter -o srt main.o raymath.o shaders.o -lm -lpthread
+time ./srt 1-test.ppm >1-test.ppm.tmp && mv 1-test.ppm.tmp 1-test.ppm
+
+real	0m45.558s
+user	0m45.455s
+sys	0m0.001s
+time ./srt 2-test.ppm >2-test.ppm.tmp && mv 2-test.ppm.tmp 2-test.ppm
+
+real	0m23.576s
+user	0m45.802s
+sys	0m0.001s
+time ./srt 4-test.ppm >4-test.ppm.tmp && mv 4-test.ppm.tmp 4-test.ppm
+
+real	0m15.371s
+user	0m45.682s
+sys	0m0.005s
+time ./srt 8-test.ppm >8-test.ppm.tmp && mv 8-test.ppm.tmp 8-test.ppm
+
+real	0m9.922s
+user	0m47.321s
+sys	0m0.000s
+for file in 1-test.ppm 2-test.ppm 4-test.ppm 8-test.ppm; do \
+  diff -u 1-test.ppm $file || exit; \
+done

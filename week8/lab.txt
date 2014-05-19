@@ -1,0 +1,109 @@
+lab8 log
+===============================================================================
+First I downloaded, gunzipped, and extracted sthttpd-2.26.4. I configured it
+using the CFLAGS="-g" option so that we could use gdb with it. I then applied
+the patch using `patch -p1 < patch.txt` where patch.txt was in the highest
+directory in sthttpd. I then used make to build the executables. 
+
+Next, I went into the src folder and ran thttpd using `./thttpd -p 12450`
+where 12450 was the portnumber I used. Using `ps aux | grep stanway` I found
+the process ID of the web server I created. Then I tied the process to gdb
+using `gdb thttpd <processID>`. I then told the server to `continue`.
+
+In another terminal connected to the same linux server, I then created a shell
+script to try and connect to the server I created and send it a bad request. 
+The shell script invoked `wget http://localhost:12450/AAAA....AAA` with thous-
+ands of A's so that I would cause a buffer overflow in the server. In the other
+window gdb detected a segmentation fault. Immediately after I called backtrace
+to see what happened:
+
+#0  0x000000327e679d9d in _int_malloc () from /lib64/libc.so.6
+#1  0x000000327e67a5e6 in calloc () from /lib64/libc.so.6
+#2  0x000000327e66f1ed in open_memstream () from /lib64/libc.so.6
+#3  0x000000327e6e4bdb in __vsyslog_chk () from /lib64/libc.so.6
+#4  0x000000327e67074e in __libc_message () from /lib64/libc.so.6
+#5  0x000000327e676126 in malloc_printerr () from /lib64/libc.so.6
+#6  0x000000327e67bb27 in _int_realloc () from /lib64/libc.so.6
+#7  0x000000327e67bce5 in realloc () from /lib64/libc.so.6
+#8  0x0000000000408b3e in httpd_realloc_str (strP=0x211fb10, maxsizeP=0x211fb18, size=3000)
+    at libhttpd.c:715
+#9  0x000000000040599b in handle_read (c=0x7f1dded48010, tvP=0x7fff70103f00) at thttpd.c:1596
+#10 0x0000000000403ad0 in main (argc=3, argv=0x7fff70105188) at thttpd.c:802
+
+To see what valgrind had to say about this, I used ran thttpd under valgrind
+(same command as gdb except using valgrind) and then ran my crashing script
+in the other terminal again.
+
+==6051== Syscall param read(buf) points to unaddressable byte(s)
+==6051==    at 0x342B4DB630: __read_nocancel (in /lib64/libc-2.12.so)
+==6051==    by 0x4059D2: handle_read (thttpd.c:1601)
+==6051==    by 0x403ACF: main (thttpd.c:802)
+==6051==  Address 0x4c71e41 is 0 bytes after a block of size 2,001 alloc'd
+==6051==    at 0x4A06BE0: realloc (vg_replace_malloc.c:662)
+==6051==    by 0x408B3D: httpd_realloc_str (libhttpd.c:715)
+==6051==    by 0x40599A: handle_read (thttpd.c:1596)
+==6051==    by 0x403ACF: main (thttpd.c:802)
+==6051==
+--6051-- VALGRIND INTERNAL ERROR: Valgrind received a signal 11 (SIGSEGV) -
+exiting
+--6051-- si_code=80;  Faulting address: 0x0;  sp: 0x402f04de0
+
+valgrind: the 'impossible' happened:
+   Killed by fatal signal
+==6051==    at 0x3803EC04: vgPlain_arena_malloc (m_mallocfree.c:291)
+==6051==    by 0x3800386A: vgMemCheck_realloc (mc_malloc_wrappers.c:490)
+==6051==    by 0x3807A0AD: vgPlain_scheduler (scheduler.c:1673)
+==6051==    by 0x380A5A19: run_a_thread_NORETURN (syswrap-linux.c:103)
+
+sched status:
+  running_tid=1
+
+Thread 1: status = VgTs_Runnable
+==6051==    at 0x4A06BE0: realloc (vg_replace_malloc.c:662)
+==6051==    by 0x408B3D: httpd_realloc_str (libhttpd.c:715)
+==6051==    by 0x40599A: handle_read (thttpd.c:1596)
+==6051==    by 0x403ACF: main (thttpd.c:802)
+
+It looks like something is happening with the realloc and things dealing with
+memory allocation when we pass in the bad request.
+
+An exploit that we could do since we patched thttpd to open a vulnerability is
+to take advantage of when the server will try to call free to realloc memory.
+What happened in the patch was that a line was modified so that when attempt to
+read, the size that we want to read doesn't get correctly updated and we 
+attempt to read too much which could cause a seg fault. An exploit to insert 
+malicious into the heap would be to attempt to write something into memory and 
+overwritethe boundary tags of the memory blocks. When the server tries to
+realloc or free memory, it will use the boundary tags to traverse the linked
+list keeping track of the free memory blocks to link a newly freed block. If we
+correctly write over a boundary tag, we can cause the program to jump to an
+address we've inserted and execute malicious code when it's traversing the
+linked list.
+
+The next thing to do was to compiple thttpd.c to get some assembly output with
+different options that protected the stack and didn't protect the stack. I
+used these three commands:
+
+gcc -m32 -c -S -o thttpd-nostackprot.s -fno-stack-protector -I . -I ../
+thttpd.c
+
+gcc -m32 -c -S -o thttpd-stackprot.s -fstack-protector -I . -I ../ thttpd.c
+
+gcc -m32 -c -S -o thttpd-sanitize.s -fsanitize=address -fstack-protector -I .
+-I ../ thttpd.c
+
+Comparing thttpd-nostackprot.s and thttpd-stackprot.s using wc it showed that
+when we have the stack protector option, there are a few extra instructions
+added but not too many. Using diff -u and looking at the actual differences,
+it appears that with stack protector, there are a few more calls to movl, cmpl,
+jmp, and some function __stack_chk_fail is being called. I'd guess these have
+to do with the extra canary bits involved.
+
+Comparing thttpd-stackprot.s and thttpd-sanitize.s, I found that the sanitized
+version has about 10,000 more lines of code than the other version. Looking
+through the diff -u of the two files, the sanitized one produces a lot more
+movl, cmpb, testb, je, etc. and also calls a function __asan_report_load4. I'd
+say that the sanitize option is less efficient because it has so many more
+lines of code to execute because it is always checking to see whenever pointers
+are used that indexes are in-bounds. 
+

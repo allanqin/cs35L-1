@@ -1,0 +1,32 @@
+lab6 log
+=========================================================
+This lab involved setting up secure shells for other people to access. We
+did this from two points of view: admin and client.
+
+As admin:
+We had to create an account for a user on our server. To do this, we did the
+following steps:
+1) ssh-keygen (make public and private RSA keys)
+2) sudo useradd -d /home/susan -m susan
+3) sudo passwd susan (create password for client)
+4) cd /home/susan
+5) sudo mkdir .ssh
+6) sudo chown -R susan .ssh
+7) sudo chmod 700 .ssh (give client full permission on own directory)
+
+The client is now ready to ssh to our server if they have our IP address.
+
+
+As client:
+This part involved trying to ssh to another server. We did the following steps:
+
+1) ssh-keygen (create public and private key)
+2) ssh-copy-id -i is_rsa.pub stan1@<IPaddressofserver> (give server our public key)
+	-can now ssh into server and login by typing in our password
+3) ssh-add is_rsa (add our private key to the ssh agent so we don't need to use
+   password to login)
+4) ssh stan1@<IPaddressofserver> (didn't need password or passphrase to login now)
+5) ssh -X stan1@<IPaddressofserver> (X-session forwarding for GUI elements to be
+   displayed on our computer)
+	-tested the X-session forwarding by trying programs like firefox, gedit,
+	xterm. It worked and the GUI was shown in our terminal window.

@@ -1,0 +1,123 @@
+cs35L Lec 4 January 15, 2014
+Shell Scripting Part 2
+===============================================
+Standard input:
+./buildwords < webpage.html
+	// uses standard input
+	// use '-' to refer to the standard input in the script
+e.g.
+#!/bin/bash
+grep "aa" - | sort -u	// the grep command searches through what 
+						// was sent in from standard input since the '-'
+// If you leave the last command hanging the default behavior is to print to standard output
+
+Arguments:
+./sameln dir1 dir2 dir3 
+	// $1, $2, $3, $n accesses the n'th argument in the script
+	// $# gives the total number of arguments
+	
+cmp:
+-compares two files byte by byte
+	// not output if identical files
+-$? in the shell is the return value of the previously executed command in the shell
+
+$? and cmp:
+e.g.
+cmp file1 file2
+1
+echo $?
+1
+<then can store the value in a variable>
+	i.e. retVal="$?"
+	
+Double and single quotes:
+-Using single quotes means everything in the string will be a literal while not with double quotes
+
+Backticks:
+e.g.
+output=`ls -l`
+	// the variable output is the output of the executed command (ls -l) 
+	// if the command was enclosed in backticks
+// executes the enclosed command
+
+LAB HINTS:
+#!/bin/bash
+
+arg1=$1
+allfiles=`find $arg1 -name "*.txt"`
+
+IFS=$'\n'	// IFS variable tells the loop iteration how to separate spaces, in thise case, 
+			// elements are broken apart at newlines for iteration (to catch files with spaces 
+			// in their names)
+for filename in $allfiles
+do
+	echo $filename
+done
+
+// man test to see different test option flags
+
+e.g.
+#!/bin/bash
+
+var1="hello world.txt"
+grep "hello" "$var1"	// if you don't enclose the $var1 in double quotes, it will split the var1
+						// variable into two arguments, hello and world.txt 
+						
+
+-Another way of using sed:
+sed '/<!DOCTYPE/,/Adopt/d' file.txt		// Deletes everything from the start pattern <!DOCTYPE> to the 
+										// end pattern Adopt in file.txt
+// Use in pairs to delete <td> and </td> tags
+
+POXSIX bracket expressions:
+[:alnum:] - alphanumeric characters
+[:alpha:] - alphabetic characters
+[:upper:] - upper case letters
+[:lower:] - lower case letters
+// Can use in conjunction with tr
+e.g.
+tr [:lower:] [:upper:] 	// changes all lower cases to upper cases
+tr -d '\n' < file.txt 	// deletes all newline characters in file.txt with the -d flag
+
+Nonprintable characters:
+e.g.
+od -c file.txt 		// octal dump shown in characters with '-c'
+					// can show you hidden characters like \n, \r 
+					
+-\r\n is a carriage return and is how Windows editors make new lines
+-Some regular expressions are basic or extended (+ and ? are extended)
+	-look and command specs 
+e.g.
+grep -e "DFSDFSD" 	// lets grep use extended regular expressions (or use egrep)
+sed -r 				// -r option lets sed interpret extended regular expressions
+
+LAB GRADING:
+30% buildwords
+10% lab log
+60% sameln
+
+HOMEWORK HINTS:
+-If you type ls -li, the big number that comes first will be the same for all hardlinked and the original
+ file
+-Use ln -f file1 file2 to hardlink file2 to file1 if file2 already exists
+-If you want to create a space or a star in the file name, escape it
+e.g.
+hello\ world.txt
+this\*file.txt
+
+-symbols are lexicographically earlier than letters
+	-. is first
+-try these test cases:
+.Abcdt4
+.ABcdt4a	-	highest precedence in 'C' locale so hardlink others to this file
+abcdt4
+-man test for options to test for regular files and symbolic links!
+-look at the HW samplecode to see how to declare arrays, etc
+-tr -d '[:blank:]' deletes all white spaces
+-can use set -x in the beginning of your shell script to debug but remember to remove it before submitting!
+
+
+
+
+
+

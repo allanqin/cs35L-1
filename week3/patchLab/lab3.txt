@@ -1,0 +1,26 @@
+lab3 log
+Installing a small change to a big package
+------------------------------------------
+The first thing I did was to get Coreutils 7.6 which I downloarded from the
+assignment webpage. I downloaded it to my Desktop directory. I then unzipped
+it using 'tar xvf coreutils-7.6.tar.gz'. I then changed into the unzipped
+directory. I created my own directory 'mybuild' and used the command
+'./configure /u/cs/ugrad/stanway/Desktop/coreutils-7.6/mybuild' to run the 
+script readying for installation. Then with 'make install' the software was
+installed.
+
+To reproduce the bug, I switched the bin in 'mybuild' and ran the old version
+of the ls -l command using './ls -l bin/bash'. The date indeed came out in the
+wrong format (2013-07-09).
+
+To apply the patch, I switched back to the highest level in the coreutils-7.6
+folder and then went into the src folder. Opening the 'ls.c' file with vim, I
+went to the lines specified from the diff output in the patch page and deleted
+and added in the appropriate lines.
+
+Back at the top of the source tree, just typing in 'make', many of the things
+that were executed the first time were not needed again since we only made
+changes to the ls.c file.
+
+I reinstalled the patched software and went back into /mybuild/bin. I tested
+out the fixed date format and it worked (Jul  9  2013).  

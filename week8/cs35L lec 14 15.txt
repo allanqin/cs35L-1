@@ -1,0 +1,101 @@
+cs35L week 8 14/15
+=========================================================================
+Buffer Overflows
+=========================================================================
+The stack:
+-grows downwards from higher addresses to lower ones
+-each function has a frame in the stack
+-frame pointer points at a fixed location in the current fram
+	-used in assembly to access arguments in relation to the frame pointer
+-stack pointer poitns to top of stack
+-previous frame pointer poitns to the fixed position of the previous frame's fixed frame pointer
+-the return address pointer points to the text segment of the heap to continue execution
+	-text segment is the machine code to be ran (already compiled binary instructions)
+e.g. 
+Lower address	...		higher address
+|Locals|PFP|ret|args|Locals|PFP|ret|args|...|
+     Frame 2        |       Frame 1     |
+
+Buffer overflow:
+-strcpy copies until it hits a null byte
+
+Ex:
+-we create a large string of length 256 and call a function which uses strcpy to put that string into
+ its own buffer which is length 16. strcpy will copy until the null byte without knowing if one buffer
+ fit into the other (256 > 16)
+-Frame 2 = function
+	-buffer[16] is stored in the Locals area
+-Frame 1 = main function 
+	-long string is stoerd in the Locals area
+-strcpy copies past its allotted 16 spaces in the locals area and overwrites into other segments,
+ overwriting the previous frame pointer / return address.
+ -when we try to return to the return address, it may be invalid and we get a segmentation fault
+ 
+One exploit using buffer overflow:
+1) Overwrite the return address to that of the beginning of the locals segment (buffer)
+	-processor then begins to execute code held in the buffer (buffer must be in machine code) (binary executable)
+	-can spawn a shell in the server with admin privelages that we can use
+	-must known some specifics of the system so we know how much to overwrite
+
+LAB:
+Download the file and unzip
+Use ./configure CFLAGS="-g" to get debugging options for gdb
+Apply the patch
+Make
+go to source folder and use ./thttpd -p <portnumber>
+Pick one of the port numbers 12400 - 12499 
+
+Actually, do this in gdb:
+1) Find server process ID using ps aux | grep stanway
+2) run in gdb via: gdb thttpd <process ID>
+3) Use continue command in gdb
+
+Then, in another terminal:
+1) create a shell script to crash the server
+e.g.
+#!usr/local/cs/bin/bash
+wget http://localhost:<portnumber>/AAAAAAAAAA...AAAAAAAAAAAAAA	//about 7000 A's
+
+Call the shell script. (make sure you are on the same linux server)
+After the seg fault causes a crash, call a back trace on the terminal running the server.
+
+-find out where hc->reade)buf is being allocated. You should find that its a heap overflow (on the heap)
+	-use grep to find
+
+-handle_read is called multiple times
+-read_idx points to where you've currently read to
+-when we remove "- hc->read_idx", we continue to read for read_size and which may cause use to go
+	over the end of the buffer. We must subtract something to know how much space we have left.
+-When we keep writing into the buffer in the heap, we can overwrite the boundary tags of the memory blocks
+	and when the program tries to free it, it gets confused and crashes.
+-To exploit heap overflow, you mess with the linked list that holds free memory blocks
+	-when free is called, there is a jump instruction to move through the linked list. If we can 
+	modify the jump address we can direct the program to our exploit code.
+
+-run make clean before you do step 8
+-use diff -u to compare files
+	-or use grep on each and look for call
+-fstackprotector:
+-uses "canaries"
+e.g.
+|Locals|PFP|c1|ret|c2|args|Locals|PFP|c1|ret|c2|args|...|
+-c1 and c2 are canary bits which are randomly generated. If there are modified at any time, then an
+	error is flagged and all execution stops.
+	-adds lots of extra checks so less efficient
+	-assembly will have some `call stack-check`s sprinkled throughout
+
+-fsanitize=address:
+	-adds a lot of extra code that checks for any out-of-bounds accesses on the stack and heap
+	 so that, for example, you couldn't overwrite the buffer size.
+	 -checks every pointer so there's tons of extra code
+-fstackprotector
+	-just has to check stack so more efficient
+
+Use valgrind: valgrind ./thttpd -p <portnumber>
+	-see what it tells you about the segmentation fault
+	
+Homework:
+Think about significance of damage, ease of exploitation, widespread, ease of repair/prevention.
+There's no "correct" answers.
+
+Google how to open ports in linux to use the amazon web server.

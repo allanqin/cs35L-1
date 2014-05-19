@@ -1,0 +1,29 @@
+#!/bin/bash
+#buildwords
+
+sed '/<!DOCTYPE/,/Adopt/d' - | \
+sed '/<\/table>/,/<\/html>/d' | \
+sed '/<\/tr>/d' | sed '/<tr>/d' | \
+sed '/<td><br>/,/<td><\/td>/d' | \
+sed '2~2d' | \
+sed "s/\`/'/g" | \
+sed "s/<u>\([^<]\)*<\/u>/\1/g" | \
+tr '[:upper:]' '[:lower:]' | \
+sed "s/<td>\([^<]*\)<\/td>/\1/g" | \
+tr -cs [^\'pPkKmMnNwWlLhHaAeEiIoOuU] '[\n*]' | \
+sort -u | \
+sed '1d'
+
+#Steps:
+#get rid of first irrelevant chunk
+#get rid of second irrelevant chunk
+#get rid of </tr> and <tr>
+#get rid of the triplit <td><br></tr><tr></tr> blocks
+#get rid of even lines
+#change backticks to apostrophes
+#get rid of underscore brackets
+#change upper cases to lower
+#get rid of <td> tags
+#get rid of invalid hawaiian characters
+#sort uniquely
+#get rid of newline in line 1 that's still leftover for some reason

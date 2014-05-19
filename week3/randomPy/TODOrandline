@@ -1,0 +1,29 @@
+TODO in randline.py
+
+How to handle IO errors
+	-do for each file?
+
+newline check: ==DONE==
+put all lines of a file into an array.
+check if the array at the higest index is a newline
+if not, add newline to the array
+
+Spec:
+Take an arbitrary number of input file arguments
+	-how to append together? (look at piazza) ==DONE==
+
+Append newline character to files if they don't  already end in one ==DONE==
+	-only case to watch for is empty file?
+	-if so, then check for case where list is len 0
+
+-u --unique option: ==DONE==
+remove duplicate lines before random selection
+	-cast list to set and back to list
+
+-w --without-replacement option ==DONE==
+when choosing random lines, eliminate the possibility of repeats
+Idea: maybe put used lines in a list and check if a line has been chosen?
+Error if input file contains less lines than NUMLINES. Throw an exception
+
+for both -u and -w ==DONE==
+Error if argument of n is greater than num of unique lines

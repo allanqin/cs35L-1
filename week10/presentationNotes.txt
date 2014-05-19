@@ -1,0 +1,30 @@
+Presentation notes:
+
+spatial segregation - more segregates has a larger dilation index u since people collapse together for
+work and the are far apart agian when they go home. characteristice of cities with a central'
+business district. "monocentric"
+
+Cities where residential areas are more mixed with business have a lower dilation index
+"polycentric"
+
+
+Coommon thread is that many people collapse together for work/school in the morning
+but they disperse less coordinatedly at the end of the day
+
+DENSITY ANALYSIS:
+Use density of people to determine hotspots
+
+High dilation constant indicates less mixed city
+low means that residential and businesses are mixed
+
+Intermediate: Spatial spread is pretty constant thourghout day
+Segregated: more residential
+High: Central business district
+
+
+Hotspots:
+Loubar method for d_max
+
+permanent hotspots - "heart of city"
+intermediate hotspots - half a day
+intermittent - few hours per day

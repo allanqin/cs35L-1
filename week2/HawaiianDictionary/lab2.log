@@ -1,0 +1,69 @@
+lab2.log
+
+Spell-checking Hawaiian
+========================
+First we were supposed to create a file words that was made of the sorted
+the sorted contents of the file /usr/share/dict/words. using cat on words
+showed that the contents were indeed alphabetically sorted.
+
+Next, we were supposed to test what different terminal commands did. wget was
+used to download the assignment webpage and the commands were used on this 
+file. Here are the following commands and their effects on assign2.html:
+
+cat assign2.html | tr -c 'A-Za-z' '[\n*]'
+This replaces all non-alphabetic characters in the file with a newline.
+
+cat assign2.html | tr -cs 'A-za-z' '[\n*]'
+Similar in function to above except the extra -s flag squeezes together any 
+consecutive non-alphabetic characters and replaces them all with a newline.
+
+cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | sort
+The output from the previous command is sorted alphabetically.
+
+cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | sort -u
+The same output from the previous command except there are no repeated words.
+Only unique words are kept.
+
+cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | sort -u | comm - words
+comm compares two sorted files. This command therefore compared the files 
+assign2.html and words.txt and puts the results into three columns. The first
+column shows lines unique to the sorted assign2.html file, column 2 shows lines
+unique to words.txt, and column 3 shows words common to both.
+
+cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | sort -u | comm -23 - words
+This is the same as the above command except that columns 2 and 3 aren't shown
+so that the output is only the words unique to the sorted assign2.html file. 
+
+
+
+After using my script to create a file called hwords with the sorted Hawaiian
+words from the hwnwdseng.htm, I can modify the last shell command listed above
+to implement a spell checker for Hawaiian of sorts.
+
+The following command now counts the number words in file.txt that are mis-
+pelled Hawaiian words. The script found 405 mispelled Hawaiian words.
+
+cat file.txt | tr -cs 'A-Za-z' '[\n*]' | tr '[:upper:]' '[:lower:]' | \
+sort -u | comm -23 - hwords | wc
+
+The following command finds the words in file.txt that are mispelled
+English words. The script found 14 mispelled English words.
+
+cat file.txt | tr -cs 'A-Za-z' '[\n*]' | tr -[:upper:]' '[:lower:]' | \
+sort -u | comm -23 - words | wc
+
+In order to find which words that were "mispelled" as English but not as
+Hawaiian I redirected the English spell checker command into an msEN
+file (replacing the pipe to wc). I then compared msEN to hwords using
+'comm -12 msEN hwords' which would give words common to both files. None
+were found.
+
+In order to find which words that were "mispelled" as Hawaiian but not as
+English I redirected the Hawaiian spell checker command into an msHA file
+(replacing the pipe to wc). I then compared msHA to words using the command
+'comm -12 msHA words' which would give words that were mispelled in Hawaiian
+but not in English. Piping it into wc there were 391 instances. Some of these
+are "transcript", "user", "following", and "however". This makes sense because
+we'd expect that many of the English words don't exit in Hawaiian, explaining
+the larger number of instances found.
+

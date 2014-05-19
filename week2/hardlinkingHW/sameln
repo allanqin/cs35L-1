@@ -1,0 +1,83 @@
+#!/bin/bash
+
+#script to hardlink identical files 
+#script cannot handle files that are only a '*'
+
+#Notes:
+#ls -ail <directory> | egrep "\.[^.]+" | sort 
+#ls .[^.]* shows all dot files in the current directory
+
+dir=$1
+cd "$dir"
+
+dotfiles=`ls .[^.]* | sort`
+regfiles=`ls | sort`
+declare -a arr1
+declare -a arr2
+
+#get all dotfiles in an array
+arr1size=0
+IFS=$'\n'
+for file in $dotfiles
+do
+	arr1[$arr1size]="$file"
+	let arr1size=arr1size+1
+done
+
+# get all regular files in an array
+#possible solution: fix regfiles astericks here
+arr2size=0
+IFS=$'\n'
+for file in $regfiles
+do
+	if [ -f "$file" ]
+	then
+		arr2[$arr2size]="$file"
+		let arr2size=arr2size+1
+	else
+		echo "$dir/$file is not a regular file"	#why does this show twice?
+	fi
+done
+
+#two loops to combine array into one large array sorted in order of priority
+declare -a final
+size=0
+count=0
+while [ $count -lt $arr1size ]
+do
+	final[$size]=${arr1[$count]}
+	let count=count+1
+	let size=size+1
+done
+
+count=0
+while [ $count -lt $arr2size ]
+do
+	final[$size]=${arr2[$count]}
+	let count=count+1
+	let size=size+1
+done
+
+
+#loop to hardlink duplicates
+count=0
+while [ $count -lt $size ]
+do
+#hardlink happens this nested loop
+#nested loop breaks once a hardlink is made for efficiency
+	let temp=$count+1
+	while [ $temp -lt $size ]
+	do
+		equal=`cmp -- "${final[$count]}" "${final[$temp]}"` #need double quotes to evaluate variable but leave special characters as is like * and spaces. double quotes also preserve white space
+		if [ -z $equal ]
+		then
+			ln -f -- "${final[$count]}" "${final[$temp]}"
+			break
+		fi
+		let temp=temp+1
+	done
+	let count=count+1
+done
+
+
+

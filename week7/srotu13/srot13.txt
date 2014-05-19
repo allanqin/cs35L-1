@@ -1,0 +1,42 @@
+homework 7 - Stanway Liau
+===============================================================================
+To compare the performance of srot13 and srot13u, I first created a program
+which generated 5 million random ASCII characters and put the output into a
+text file. I then used this text file and the time command to compare the per-
+formance of both.
+
+srot13:
+	real	0m31.185s
+	user	0m2.620s
+	sys	0m8.221s
+
+srot13u:
+	real	0m34.482s
+	user	0m2.232s
+	sys	0m11.293s
+
+As expected, srot13u is a bit slower than the implementation using stdlib calls
+but the difference, at least with 5 million random characters, is not too large
+of a difference. For inputs with a small amount of lines, the difference is 
+negligible. Note that the time spent in the user space isn't drastically diff-
+erent but that's not the case with time spent in the sys space, where more sys-
+tem calls would inflate that stat. 
+
+To estimate the number of comparisons that srot13u performs as a function of
+the number of input lines, I just modified my random char program to generate
+n arbitrary lines to sort and passed those into srot13u to see how many
+comparisons were being performed.
+
+Input Lines		Comparisons
+-----------------------------------
+10			        23
+1000			      8751
+0.1 million		   1541383
+1 million		  18732287
+5 million		 105364304
+50 million		1219878603
+
+The complexity of qsort is expected to be around O(nlog(n)). The results from
+my tests above do hold pretty closely to nlogn comparisons for n lines of
+input.
+

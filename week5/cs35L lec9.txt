@@ -1,0 +1,79 @@
+cs35L week 5 Lecture 9 February 5, 2014
+=========================================================================
+C programming and debugging Part 2
+=========================================================================
+LAB:
+-When we try to reproduce the problem in our home directory instead of the temp directory, it thinks wwi-armistice
+ is in the future instead. The SEASnet linux servers use 64-bit time stamps although our files in the
+ home directory use a network file system (NFS) which only use 32-bit time stamps. When the file is stored
+ from the SEASnet servers to our own computer, the NFS truncates the upper 32 bits. When we then again
+ try to read the timestamp on the SEASnet servers, it appends 0000..00 to the upper 32-bits and the number
+ becomes a positive number and hence appears from the future. The sign bit indicating a negative time stamp
+ was truncated. (Don't fix this issue in the lab). Creating the /tmp/ directory in the SEASnet server works
+ because that directory is stored in SEASnet with its 64-bit file system so no truncation happens.
+ 
+ Ternary operator:
+ Question mark operator
+ Ex.
+ int i = 5, j = 0;
+ int k;
+ k = (j != 0) ? i : 9;		//if j is non-zero (default behavior is this if just 'j')
+ 
+ ...is equivalent to...
+ 
+ if (j){
+	k = i;
+ }
+ else{
+	k = 9;
+ }
+ 
+ emacs ls.c
+ M-x gdb
+ -replace last argument with ./ls
+ C-x 3 //open new window
+ C-x <left or right arrows> to toggle buffers
+ r -lt /temp/wwi-armistice 	//run in -lt option with argument wwi-armistice
+ 
+ //start debugging in static void sort_files(void) {...}
+ 
+ set break at sort_files and find what's wrong with the compare function passed into qsort
+ 
+ HOMEWORK:
+ HINT: Compare characters' ASCII values
+ 
+ int main(int argc, char *argv[])
+ {
+ int nRecords = 10;
+ Tuple *r = malloc(sizeof(Tuple) * nRecords);
+ for (int i = 0; 
+ }
+ 
+ -ask to send us qsortSample.c as reference?
+ 
+ Any record that starts with a null byte '/0' comes before those that don't begin with it
+ 
+ Decode in compare function that gets passed to qsort. Don't actually decode outside.
+ 
+ HINT: Use a single pointer 'char * p' which points to the array
+ 
+ 1)read all characters into one array
+ 2)count newliines to find # of records
+ 3)create array of character pointers 'char **p' 
+	-send pointers in the second array to qsort
+	-helps with qsort since you don't know the size of each file before you send it in
+	-using another array of char pointers, make it hold pointers to the first character of each
+	 record in the original array and send those pointers into qsort
+	-in compare function cast pointers to character pointers and compare two of them until one hits a newline.
+	
+	EOF- end of file
+	If passed in an empty file, we get an EOF immediately
+	Keep a count of where in buffer you are
+	Reallocate when count reaches buffer size
+	Reupdate current buffer size
+	DO this in a loop until EOF (end of file)
+	Check if last character isn't a newline, add it
+	
+	Remember to fre memory after
+	Look into Valgrind to check memory leaks
+	valgrind --leak-check=yes ./filetoexecute (make sure filetoexecute was compiled with -g flag)

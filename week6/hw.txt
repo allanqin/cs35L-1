@@ -1,0 +1,35 @@
+homework 6
+===============================================================
+1) Suppose the other teams had been observing all the bytes going across our
+   network. The resulting network we created would still be secure if we were
+   using ssh to connectbecause in between the computers all the messages and
+   data that were being sent across were already encrypted first so any third
+   parties would be seeing gibberish. 
+
+   Now suppose that the other teams had tapped our keyboards and recorded our
+   keystrokes. Our network could then be compromised because although ssh'ing
+   would encrpyt any messages sent in between through the network, it does not
+   protect the "ends" of the network where the user interfaces with the compu-
+   ter. Any entered passwords/passphrases could be detected through the key-
+   strokes.
+
+   If we were booting off a USB our security could also be compromised since
+   outsiders could have access to our private key and hence when they are 
+   spying on the network lines, they could use it to decrypt any messages 
+   being sent to us, especially if our key wasn't passphrase protected.
+
+2) the gpg --verify can only the integrity of the document that was sent. It
+   can't verify that it originated from a particular person. This is because
+   as a receiver, there isn't really a good way to verify that the public key
+   which you are using to verify the digital signature of a file belongs to the
+   person that you want it to. For instance, If Alice is sending a file to Bob,
+   Eve can just sign a document saying that she is Alice, intecercept Alice's
+   message and send her own to Bob. If Bob uses Eve's public key to verify it,
+   it will seem legitimate, although it is not Alice's sent file.
+
+   The only way to really combat this problem is to have a trusted third party
+   keep track of which people have which public key so that when you want to
+   verify a digital signature, you use the public key in the third party's
+   database. This is what some companies like VeriSign do. The downside is that
+   one must ultimately place their trust in the third party to do their job
+   correctly.

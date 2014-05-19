@@ -1,0 +1,49 @@
+cs35L week 4 lecture 7 January 29, 2014
+================================================================
+Change management / Git Part 2
+================================================================
+Some possible errors you're getting on the lab:
+1) Detached Head
+	-git checkout v3.0 -b branchname
+2) help2man errors -> set PATH
+
+LAB:
+Before you patch:
+Switch to v3.0 branch and recreate the error
+
+To build:
+./bootstrap
+./configure
+make
+
+cd src
+run `./diff --help` and find incorrect back ticks
+
+run `./diff . -` and notice the backtick as well
+
+-Leave backticks as backticks in comments
+/*  `  */ 	is what a comment looks like
+-In C-strings, change backticks to " ' " (cstrings in between quotes)
+
+-Go through all c.rej files and find places where you must manually make changes to backticks
+-For non .c files, revert ALL changes to modified files (find in git status)
+
+-Open the .c files with emacs and go into C-x v = mode
+-Go near the lines of the diff to change and use C-c C-a to revert the hunk
+
+-C-x v u on diff.h (reverts changes in whole file)
+-C-c C-c at a line in C-x v = mode will jump to that portion in the source code
+
+-man git-diff will get the man pages for git diff
+
+Homework:
+git format-patch -[num] --stdout > name.txt
+	-num is how many commits do you want for the patch (use 1)
+	
+emacs diff.c
+	C-x 4a 
+		* src/diff.c: Changed all backticks to single quotes
+		
+emacs cmp.c
+
+		* src/cmp.c: Changed all backticks to single quotes

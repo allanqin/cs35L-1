@@ -1,0 +1,209 @@
+cs35L week 3 Lec 5 January 22, 2014
+GNU Make / Python
+=================================================
+GNU Make
+=================================================
+
+		foo.h 	// header
+	|			|
+foo.cpp		main.cpp	// files to be compiled
+    |			|
+foo.o		main.o		// object files
+	|			|
+		-linker-				// linker runs
+			|
+		mainexec				// result is an executable (any name)
+
+
+GCC and compilation:
+gcc -c foo.cpp -o foo.o
+	// -c says to only compile and not link
+	// -o says to put the output into an object file foo.o
+	
+g++ main.o foo.o -o mainexec
+	// links main.o and foo.o into an executable
+	
+-The linking phase connects the addresses of functions of other things 
+ that aren't defined in that current file so that they can be executed later.
+ 
+ makefile:
+ -Helps to make compilation smoother so you don't have to type all the commands.
+ 
+ -Looks like:
+  <target><TAB>:<TAB><dependencies>
+  <TAB> <rule>
+  
+  e.g.
+  mainexec	:	foo.o main.o
+		g++ main.o foo.o -o mainexec
+  foo.o		:	foo.h foo.cpp
+		g++ -c foo.cpp -o foo.o
+  main.o	:	foo.h main.cpp
+		g++ -c main.cpp -o main.o
+  clean		:
+		rm -f main.o foo.o myexec
+  
+ -the main purpose of the makefile should be at the top (int this case creating
+  the executable)
+ -then just using the command 'make' will create the executable for you
+ -if a change to file is made, using make again will only execute things that are 
+  dependent on that changed file
+  -make can just check the last modified times of the source files and the executable
+		-if the executable is older than the source files, changes must be made
+	
+-if no arguments are passed to make, the first rule is executed
+-you can list a specific target as a command for make and it will only do that section
+		-e.g. make foo.o
+
+How to install the coreutils for lab:	
+use wget <address> to get the coreutils
+tar xvf <file>to extract
+create a directory where you want to install the software
+use ./configure --prefix=<absolute path of where you want to install the software>
+use make install
+
+in the patch page remove the lines with the - and add the oens with +
+use ./ls -l /bin/bash to use the ls in the folder
+
+
+=================================================
+Python
+=================================================
+-blocks are defined by spacing
+-data types don't have to be defined
+-type in 'python' into the command line to run the interpreter
+
+def DataTypes(dummy):
+	#Intergers and Floats
+	tempInt = 5
+	tempFloat = 6.7
+	
+	#Strings
+	sampleSTR = "My first python script!"
+	print sampleSTR
+	sampleSTR = sampleSTR + 'A' + sampleSTR * 2	#You can add strings
+	sampleSTR[0]	#Index of strings start at 0
+	len(sampleSTR)	#length of string function
+	sampleSTR[3:7]	#substring ranging from index 3 to 7 exclusive of 7
+	sampleSTR[3:len(sampleSTR)]	#substring from index 3 until the end
+	sampleSTR[:5]	#everything up to the fifth index exclusive of 5
+	sampleSTR[-1]	#negative indexes start from the back of the string starting from -1
+	#strings are immutable (cannot change once created)
+	
+	#lists are mutable
+	#use square braces for lists
+	#like an array but can hold any data types
+	list = [10, 20, 'hello', 'world']
+	list[0]		#index lists like strings
+	list.append('bye')	#use .append to add to the end of the list
+	list[:] = []		#clears the list
+	
+	#sets - no duplicate elements. Good for membership testing and finding duplicates
+	s1 = set('abracadabra')	#only unique elements will be stored
+	s2 = set('alacazam')
+	
+	
+	#set operations
+	print 'The sets contain - ', s1, s2
+	s1 - s2		#in s1 but not s2
+	s1 | s2		#union of both sets
+	s1 * s2		#intersection of sets
+	
+	#converting a list to a set with unique elements
+	basket = ['aple', 'orange', 'apple', 'pear']
+	uniquebasket = list(set(basket))	#uniquebasket is now a unique list
+	
+	#Dictionary: associative arrays
+	d = {}
+	d["Tom"] = 12345	#associates the key value to the value 12345
+	d["SeasHelp"] = 67899
+	#Unique keys
+	d["Tom"] = 911
+	d.values()
+	d.keys()
+	d.items()
+	print d
+	#check what keys we have
+	if 'Tom' in d.keys():
+		print 'Tom presetn!'
+	elif 'SeasHelp' in d.keys():
+		print 'Seas present!'
+		
+def Looping(forloops, whileloops):
+    a = 0
+    while a < 10:
+        print 'The current value of a is', a
+        print 'The current value of a is {0} and a+1 is {1}'.format(a, a+1)
+        a = a + 1
+
+    for i in range(0, 10):
+        print 'The current value of i is', i
+
+    lst = ['a', 'b', 'c', 'd']
+    for i in range(len(lst)):
+        print i, lst[i]
+
+    range(3, 10)
+    #Generates a list [3, 4, 5, 6, 7, 8, 9]
+    #Increments of 2
+    range(0, 10, 2)
+    #Generates list [0, 2, 4, 6, 8]
+
+    return lst
+
+
+class Engine:
+    modelID=0
+	#Constructor with a reference to self - Like the "this" pointer in c++
+    def __init__(self, ID):
+        self.modelID = ID
+
+    def printID(self):
+        print 'Engine model ID is ', self.modelID
+
+def main():
+	#sys.argv for accessing command line arguments
+    print sys.argv
+    Looping(5, 5)
+    DataTypes([5, 4, 5, 'arguments'])
+    myEngine = Engine(20)
+    myEngine.printID()
+    print 'You can access the internal members directly. modelID is ', myEngine.modelID
+
+#Defining an entry point for the script
+if __name__=="__main__":
+    main()
+		
+-lists and sets should be good enough for the homework
+-review what 'this' pointer is in C++ and what 'self' is in Python
+
+homework hint:
+-the option -u is to only consider unique lines
+-the option -n says how many lines to print
+	-the number after -n is the amount of lines to print
+-combine files into one large file and generate random lines from there
+-the -w option is 'without replacement' so the probabilities will be different for each run
+	-without the -w option the probability is the same
+-add another option to the option parser
+
+Exceptions
+------------------
+C++:
+int x, y;
+cin >> x >> y;
+try		// put in statements that can go wrong
+{
+	int result = x/y;
+	cout << "Worked fine!!"
+}
+catch (Dividebyzero) 	// only executes if something in "try" goes wrong
+{
+	cout << "Failed";
+}
+
+Python:
+try:
+	numlines = int(options.numlines)
+except:
+	parser.error("Invalid NUMLINES: {0}")
+

@@ -1,0 +1,59 @@
+lab5 log
+================================================
+I first downloaded the version of coreutils-with-bug and unzipped it with
+tar xvf. Then I tried to build it using `./configure CFLAGS="-g -O0"` and make
+but this failed. I then used wget to download the patch and applied it using
+`patch -p0 < coreutils.diff` and then tried to build the software again. It
+did create the executables correctly this time. 
+
+Next, I had to recreate the bug. I used the touch command to create three files
+in a temp directory: now, now1, and wwi-armistice (this file we created to date
+back to 1918). I then went into the source code of the coreutils-with-bug that
+I created and ran the ls in there using `./ls -lt /tmp/now /tmp/now1 /tmp/wwi-
+armistice` and the bug was seen as wwi-armisitce, the oldest file, was listed
+at the top where the newest file should be.
+
+To debug this, I used gdb. First, I opened up ls.c and looked at the source
+code. There was a function sort files that sorted the contents of the directory
+depending on name, time, etc. This was a promising place to start debugging. I
+also say that some function 'compare_mtime' was being passed into qsort to sort
+the files by time if the -t option was used for ls. I followed this function all
+the way to two header files: stat-time.h and timespec.h header file in the /lib
+folder. I opened the ls.c file in emacs and then ran gdb inside of emacs on the
+exectable ls file via the command 'M-x gdb' and 'gdb --anotate3 ./ls`.I then set
+a breakpoint at the sort_file function using 'b sort_files'. I also set a 
+breakpoint at the compare_mtime function. I then used 's' in gdb to step into
+those function to see what was going on.
+
+'compare_mtime' was calling another function 'cmp_mtime' which in turn
+called a function 'timespec_cmp' from the timespec.h header file. When gdb
+stepped into the timespec_cmp function, I used 'p' to see the values for the
+variables begin compared. The wwi-armistice file had a very negative m_time
+metadata and the now file had a pretty high positive one. Integer overflow 
+appeared to be the culprit for the bug. timesepc_cmp stored the value of the
+difference in an int. When I let gdb step through the calculation, the result
+of subtracting a negative from a positive was negative. Overflow had happened
+and the bug was found. 
+
+To fix the bug, inside timespec.h, instead of using an int to compare store
+the difference between two mtime variables, I used a signed long long int 
+and then depending on the sign of this new variable, I either returned -1, 0,
+or 1. I recompiled the coreutils files again and tested the new ls which
+correctly sorted the files in my temp directory afterwards.
+
+To generate a patch, I used 'diff -u oldtimespec.h newtimespec.h' on the old
+and modified version of timespec.h and then I manually added a ChangeLog entry
+at the top of the resulting diff file. I testing my patch on a fresh copy of
+coreutils-with-bug and it correctly patched the error.
+
+The lab then told us to test the problem in our home directory on the SEASnet
+Linux servers rather than in the tmp directory. What happened was that ls 
+thought that wwi-armistice was way in the future. The reason this is is a 
+technical one. When we save files in our accounts, the files are stored on a
+an NFS. The NFS uses all 32bit files while the SEASnet servers use 64bit num-
+bers. What happens is that when wwi-armistice is created in the SEASnet server,
+the timestamp of the file is stored in a 64bit int. When we save the files into
+a directory in the NFS, the int is truncated to 32bit. The upper bits which
+determined the sign of the timestamp are lost and instead of the timestamp
+being interpreted as a large negative number, it becomes a large positive
+number which is why it then seems like its from the future.

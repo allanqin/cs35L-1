@@ -1,0 +1,41 @@
+lab4 log
+==============================================================
+The first thing I did was download the diffutils repository from the web.
+This went by with no problems. I initialized the git and captured the log
+and tags into two files git-log.txt and git-tag.txt.
+
+Next, I went into the log and searched for the commit with 'maint: quote...'
+and copied the hash code. I then copied the contents into a quote-patch.txt
+file and then checked out v3.0 of diffutils in a different branch 'mybranch'.
+A small problem I had here was I kept looking up the wrong hash codes to find
+the patch.
+
+I used 'patch -p1 < quote-patch.txt' to patch the software and then built it
+by running ./bootstrap, ./configure, and then 'make'. I then checked the
+error for myself by trying diff . - and diff --help. It looks like some
+comments changed the ` to and '. We only want the patch to change this in
+c-character strings.
+
+To fix this, we can use emacs in diff mode to revert certain changes that were
+made that we didn't want. Diff mode can be entered by using 'C-x v ='. Using
+'C-x v u' I reverted all changes that were made to non .c files. Then I went
+into each .c file individually and changed anything that was done to comments.
+After this, I had to manually apply some of the patches in the .rej files by
+hand.
+
+After this, I had 6 .c files which were modified as said in the spec. I used
+'git clean -n' along with 'git clean -f' to remove the untracked files.
+Checking with 'git status' showed I only had the modified files leftover.
+
+I then redirected 'git diff' into a quote-3.0-patch.txt and built the new
+diffutils again. Changing into the src directory and checking 'diff . -' and
+'./diff --help' it appeared that the problem was fixed.
+
+To do the sanity test I copied an old version of the source code into a
+directory called diffutils-3.0 and the new version of my source code into
+diffutils-3.0-patch and ran my implementation of diff to compare the two and
+directed the output into quote-3.0-test.txt. The files aren't identical but
+that would be expected as we made some changes. The differences are innocuous.
+They merely show that there are some differences resulting from the .c files
+that we were modifying earlier and that some back ticks and single quotes were
+different resulting from the patch.

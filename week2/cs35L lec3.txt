@@ -1,0 +1,148 @@
+CS35L Lec 3 January 13, 2014
+
+Shell Scripting / Reguar Expressions
+===============================================
+Pipes:
+ls > file.txt	<->		ls | wc
+wc < file.txt
+
+ls >> file.txt appends ls output to file.txt
+
+Regular Expressions:
+-Rules for generating strings
+| - OR
+* - 0 or more of any character
++ - one or more of any character (at least one)
+? - 0 or one of any character (optional)
+[] - character set, any singe character
+() - grouping
+[^] - Negation
+	e.g. [^A-Z] no capitas
+^ - pattern has to be at the beginning of a line
+$ - pattern has to be at the end of a line
+. - matches any single character
+
+e.g.
+Reg Exp:String
+a :a
+'':''
+a*:'',a,aa,aaa....
+a+:a,aa,aaa...
+a?:'',a
+[abcd]:a,b,c,d
+[a-zA-Z0-9]:any single alpha-numeric character
+a(b|c)?:a,ab,ac
+a(b|c)+:ab,ac,abc
+a[a-zA-Z0-9]*:a, any string that starts with a and is followed by alpha numeric characters
+
+GREP:
+grep "regexp" file
+-n prints line numbers where <regexp> pattern was found
+--color adds color
+-e extended regular expressions
+
+e.g.
+grep -n --color "[tT]olstoy" file.txt 
+grep -n --color "(T|t)olstoy" file.txt 
+	// finds capitalized and non-capitalized occurances of tolstoy in file.txt
+
+grep -n --color "^[tT]olstoy" file.txt 
+	// finds Tolstoys at the beginning of a line
+
+grep -n --color "^[tT]olstoy$" file.txt
+	// finds Tolstoys at the end of a line
+	
+grep -n --color "^[tT]olstoy$" file.txt
+	// finds Tolstoys that are both the beginning and end of a line
+	
+SED:
+format: sed "s/regex/replace/g" file.txt
+
+e.g.
+sed "s/[Tt]olstoy/FOUND/g" file.txt 
+	// finds and repaces all occurance of Tolstoy in the file
+	// g at the end means to go across the whole fie (global)
+	
+sed "s/[Tt]ols[a-zA-Z0-9]*toy/FOUND/g" file.txt 
+sed "s/[Tt]ols.*toy/FOUND/g" file.txt 
+	// Replaces all words that start with Tols and end with toy with FOUND
+	
+\(	\) CAPTURE AND REPLAY:
+e.g. for 'tols8spelltoy' we want to replace the word with 8spell
+
+sed "s/[Tt]ols\(.*\)toy/\1/g" file.txt 
+	// whatever is between the first \( \) is referenced by \1
+	// Finds and replaces all instances of Tolstoy with whatever was in between the escape parentheses
+	
+HINT for lab:
+<tr> <td>Eword1</td> <td>Hword1</td> </tr>
+
+Going to use something like this:
+sed "s/<tr> <td>[^<]*<\/td> <td>[^<]*<\/td> <\/tr>/FOUND/g" file.txt
+	// must escape the '/'s so there's no confusion between other '/'s
+	// [^<]* to find all the things before the </td> and after the <td>
+	
+sed "s/<tr> <td>[^<]*<\/td> <td>\([^<]*\)<\/td> <\/tr>/\/1/g" file.txt
+	// Replaces that whole line with only the Hawaiian word
+	
+-More than one things can be captured with escape parens
+
+SHELL SCRIPTING:
+
+#!/bin/bash	// first line says which interpreter to use to execute the script
+
+<shell commands>
+
+e.g.
+#!/bin/bash
+
+ls
+grep "Tolstoy" test.txt
+echo "finished execution"
+c=1
+b="hello world"
+for (( c=1; c<=5; c++ ))
+do
+	echo "Double - Value of c = $c"		// $c accesses value stored in variable c
+	echo 'Single - Value of c = $c'		// With single quotes everything in the string is literal
+done	// end the body of the loop
+
+c=1
+while [$c -lt 6]	// -eq is equals, -gt is greater than, etc
+do
+	echo "Inside while loop - Value of c = $c"
+	let c=c+1	// must use let to do arithmetic operations (can't just do c=c+1)
+done
+
+COUNT=5
+if [ $COUNT -gt 1 ]
+then
+	echo "hello world"
+elif [ $COUNT -eq 5 ]	// else if
+then	// ifs must be followed by thens
+	echo "count equals 5"
+else
+	echo "End of the world"
+fi	// close the if statement
+
+read fname	// like cin
+echo "You just input $fname"
+
+// Comments actually start with #hashes
+
+-To run the shell script type ./myshell
+-Have to set execute permissions on the file before executing the script
+
+-Look into what backticks `` do
+
+LAB hints:
+tr -c 'A-Za-z' '[\n*]'	// Replace anything that isn't an alphabet character with a \n 		// -c means complement
+tr -cs 'A-Za-z' '[\n*]'	// -s means squeeze		// squeezes consecutive occurances of non alpha characters into 1
+tr -cs 'A-Za-z' '[\n*]' | sort
+tr -cs 'A-Za-z' '[\n*]' | sort -u	// -u means unique, gets rid of duplicates
+tr -cs 'A-Za-z' '[\n*]' | sort -u | comm - words	// comm does comparisons	// - means the document from the pipe
+tr -cs 'A-Za-z' '[\n*]' | sort -u | comm -23 - words	// find -23 in the man pages
+
+
+
+

@@ -1,0 +1,68 @@
+homework 8
+===============================================================================
+The first part of the homework concerned connecting to an Amazon EC2 server.
+To do this, I made a free account and then followed the listed instructions.
+Then I did the following to reproduce the crash:
+
+1) Setup and configure a new instance of EC2 and create a key pair.
+2) chmod 400 35L.pem
+3) ssh -i 35L.pem ec2-user@ec2-54-200-83-14.us-west-2.compute.amazonaws.com
+*in terminal on my own computer* 
+4) scp -i 35L.pem -r sthttpd-2.26.4 ec2-user@ec2-54-200-83-14.us-west-2.comput \
+e.amazonaws.com:~
+5) scp -i 35L.pem crash.sh ec2-user@ec2-54-200-83-14.us-west-2.compute.amazon \
+aws.com:~
+*back in EC2 server*
+5) *back in EC2* sudo su
+6) yum install gcc
+7) cd sthttpd-2.26.4/src
+8) *manually apply patch in thttpd.c file*
+9) cd ..
+10) ./configure CFLAGS="-g"
+11) make
+*followed the same steps as in lab to crash the server*
+
+-------------------------------------------------------------------------------
+
+Second we were supposed to rank how serious we thought different vulnerabilit-
+ies were and why. They are ranked with 1-5 with 1 being the most serious:
+
+1) VU#945216 - I ranked this as the most serious threat because it exploits a
+ vulnerability in using ssh, which is a very commonly used application and
+ allows an attacker to attack remotely from anywhere. Because this attack uses
+ ssh, it also means that it is initiated by the attacker as opposed to waiting
+ for a vicitm to fall into some trap, as long as the server is accepting req-
+ uests. If the attack succeeds, the attacker also gets to inject arbitrary code
+ with full admin privileges so they'd basically have control over everything
+ on the server. Extremely dangerous.
+ 
+2) VU#732479 - This exploit is dangerous because it seems like many people
+ would be prone to it because it takes advantage of a flaw in different ver-
+ sions of IE, which comes preinstalled on all Windows computers. That's a lot
+ of potential victims. The victim doesn't need to install any extra software to
+ be attacked. This attack has been found in the wild already as well. The wild
+ exploit takes advantage of Adobe Flash which Windows 8 already comes installed
+ with. This attack is dangerous in that a large segment of people are already
+ readily able to be hurt by it. 
+ 
+3) VU#248083 - This exploit is affects only certain D-Link routers so its tar-
+ get audience isn't as widespread. However, to those with the router, the pro-
+ blem is serious because it allows for any remote attacker to access a backdoor
+ and gain access to the administrator web interface of the router. This could
+ then affect anybody that utilizes that router. Anytime that a stranger gains
+ administrator privileges, the problem should be fixed very promptly.
+
+4) VU#122582 - This vulnerability was ranked lower because it affects only
+ four versions of some Dell PowerConnect hardwares. The exploit appears to be
+ harder to execute successfully as well as the webpage says it may take mult-
+ iple requests to reset the switch. If the attack succeeds, it also leads main-
+ ly to a crash and subsequent denial-of-service for users. While not pleasant,
+ this isn't as bad as having a stranger take control of your computer.
+ 
+5) VU#863369 - This is the lowest ranked because it sounds like it would take a
+ lot to go correct for this exploit to work. First of all, this only concerns
+ users of the Mozilla Thunderbird email client. Also, the vulnerability is only
+ realized only when a message is forwarded or replied to in Thunderbird. The
+ result could be that arbitrary script could exeute within Thunderbird which
+ wouldn't have control over other things in the computer so the damage would be
+ self-contained.

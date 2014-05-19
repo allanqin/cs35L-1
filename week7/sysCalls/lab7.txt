@@ -1,0 +1,91 @@
+lab7 log
+===============================================================================
+The first thing we had to do was to create two C programs: catb.c and catu.c
+I used gcc to compile these two into executables catb and catu.
+
+catb.c:
+uses the standard library (i.e. getchar() and putchar()) to read and write 
+from stdin and stdout. 
+
+catu.c:
+uses the system call interface of the kernel to read and write from stdin and
+stdout. Calls to read and write were given argument nbyte = 1 so that bytes
+were read and written one at a time.
+
+To create the 5MB file, I just made a C program that outputted "UCLA"
+1,300,000 times and directed the output into bigfile.txt. I used the comand
+`du -sh bigfile.txt` to check if it was big enough.
+
+Next we were supposed to use strace to compare the system calls made by catb
+and catu when copying a file to another file and when copying a file to the
+terminal. I will be using bigfile.txt as the file to be copied. We also used
+the time command to see how long the each program took to run. These were our
+results.
+
+strace results:
+catu:
+1) Using `strace ./catu < bigfile.txt` I could see that the program was using
+  a read and write system call for each character in bigfile.txt. This is evi-
+  dently a lot of system calls which we would expect to give us a decrease in
+  performance do to all the switching between user and supervisor modes. With
+  the -c option, there were about 5,200,000 read and writes.
+
+2) Using `strace -o catuoutput.txt ./catu < bigfile.txt` I piped the output
+   of strace into a file instead of the terminal. With the -c option, the
+   read and writes were also about 5,200,000. However, there did seem to be
+   a time difference. We will probe this further using the time command.
+
+catb:
+1) Using `strace ./catb < bigfile.txt` I could see that instead of using system
+   calls to read a single character each time, the standard library fucntions
+   instead read a chunk of memory at a time into a buffer and successive reads
+   and writes would use the contents of that buffer. This should be much
+   quicker than catu. With the -c option, I found that we only used 5079 writes
+   and 1272 reads.
+
+2) Using `strace -o catboutput.txt ./catb < bigfile.txt` we put the output into
+   file. With the -c option the read and write results were the same as print-
+   ing to the terminal. However, there again seemed to be a time difference.
+
+time results:
+catu:
+1) Using `time ./catu < bigfile.txt` gave me
+	real	0m17.434s
+	user	0m0.228s
+	sys	0m5.340s
+
+2) Using `time ./catu < bigfile.txt > catuoutput.txt` gave me
+	real	0m5.964s
+	user	0m0.220s
+	sys	0m5.716s
+
+catb:
+1) Using `time ./catb < bigfile.txt` gave me
+	real	0m7.070s
+	user	0m0.192s
+	sys	0m0.068s
+
+2) Using `time ./catb < bigfile.txt > catboutput.txt` gave me
+	real	0m0.082s
+	user	0m0.076s
+	sys	0m0.004s
+
+Analysis:
+From using strace on catb and catu the results were expected. It wouldn't
+seem to make much sense if the reads and writes for catu were different when
+reading from bigfile.txt and writing to the terminal vs. reading from
+bigtile.txt and writing to catuoutput.txt. The same can be said for catb. And
+as expected, the reads and writes were identical.
+
+We also expected catu to be slower than catb due to the more efficient use of
+system calls and this was reflected in the time results. catb was significantly
+faster than catu when writing to the terminal and when writing to a file. This
+is because of instead of using a system call per byte, it uses a buffer so
+instead of 5 million  system calls for the 5MB of bigfile.txt, it would only
+use 5MB/bufferSize system calls. 
+
+It was interesting to not that for catu and catb that writing to a file was
+faster than writing to the terminal. Researching this online I found that this
+is also partly due to buffering. The terminal isn't doing much buffering for
+each print statement vs. writing to a file. Also, there are GUI components
+that the terminal has to concern itself with.

@@ -1,0 +1,20 @@
+hw4 log
+============================================================
+This homework was to test the patch that we made. I checked out a new branch
+of v3.0 called quote and applied my quote-3.0-patch.txt using the patch
+command. I then used emacs with C-x 4 a to update the ChangeLog for each of
+the .c files that I modified. I then commited my changes using something like
+'git commit --file=ChangeLog'. I used 'git log' afterwards to be sure it
+worked and sure enough my changes were logged. 
+
+Next, I made a patch that could be sent through email using git am. The patch
+was created using 'git format-patch -1 --stdout > formatted.patch.txt'. To
+test if this patch would work without having to do manual changes afterwards,
+I switched to a new branch of v3.0 called tmp. I tried the git am but I was
+getting some errors telling my I needed to use git am --abort first. I
+switched to a new branch of v3.0 and aborted git am first. Then I ran the
+command 'git am < formatted.patch.txt' and the changes were applied. 
+
+To verify that the change log worked, I used 'make distdir' and inseced he
+newly created diffutils*/ChangeLog file and sure enough my changes were
+logged. 
