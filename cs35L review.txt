@@ -1,0 +1,120 @@
+cs35L week 10 
+===============================================================================
+Review
+===============================================================================
+week1 Learning the Terminal:
+-Know the lab part
+-Simplest shell comands (e.g. grep, find)
+-what's a locale and what it does
+	-LC_COLLATE affects sort
+	-LC_TIME affects date/time format
+	-locale determines how things are sorted, in a sense
+-file permissions
+	-how to change them
+	-user, group, other permissions
+-hard/symbolic links
+-know how to pipe commands together
+-know how to redirect stdin, stdout, how to append to a file
+
+week2 Shell Scripting:
+-know how to write shell scripts (if, for, etc)
+	-you will definitely have to write a shell script on the final!
+-know sort, tr, grep, sed, comm, cmp, diff (how to interpret the output too)
+	-know basic tr options
+	-know some basic sort options
+	-tr is helpful for deleting certain characters, converting lowers to uppers, etc.
+-know basic and extended regular expressions (nothing too fancy)
+	-e.g. *, +, ?, (), [], capture and replate \( \) (!!!), $, ^ (^ had two meanings)
+		-what's a character set
+		
+
+week3 Python:
+-know how to write simple make files
+	-e.g. target : dependencies
+					rule
+-know what's a configure script
+	-looks through system to check dependencies and generates a make file
+-know Python
+	-classes
+	-data structures like lists, sets, strings, dictionary
+		-big advantage of dictionary is constant time access (efficient) -> O(1)
+	print the sample Python script!
+	-exception handling in Python
+
+week4 Git:
+-know the basic git commands
+-know the structure of git
+-how to setup a repository
+-how to find a certain commit
+-how to find the history of a file
+-how to commit changes
+-git log, git commit, git add, etc. (the simple commands)
+-know what's a distributed vs. centralized source control system
+
+week5 C Programming:
+-there will be lots of C code on the final
+-pointers and multi-dimensional arrays
+-using qsort and how to write the compare function for it
+-malloc, free
+-know what a function pointer is and how to declare/use one
+-how to define structs
+-difference bewteen C and C++
+
+week6 SSH:
+-different encryption ideas and schemes
+-know gpg commands (e.g. as user or sysadmin)
+-how public/key encryption works
+	-differences and pros/cons of each
+		-how would you sign a document or send an encrypted message to someone
+-different scenarios with servers/users
+-how to make a keypair, public and private key
+-which key to use to encrypt in different scenarios
+	-use your private key to encrypt for digital signatures
+	-use receiver's public key to encrypt message to them
+-how digital signatures work
+
+week7 System calls:
+-know what is buffering
+-what happens when one calls a system call
+	-switching between user and system space
+-buffered vs. unbuffered
+	-why one is faster than another
+-know read, write, close
+-good practice is to implement getchar()/putchar() with buffering using sytem calls
+	-buffer could be a global/static variable
+-know read(), write(), fstat (detect if regular file and detect file size)
+
+
+week8 Buffer Overflows:
+-know what's a buffer overflow and how to exploit it
+	-dump some code and a new return address to return to the exploit code and spawn a shell
+-know more importantly what's a stack overflow
+	-also know what's a heap overflow but not as important
+-where and how is data stored on the heap/stack
+	-where return addresses, local variables, dynamic memory, etc. is stored
+-never use strcpy() to copy user input into your buffer since it doesn't check for string length
+	-strcpy() just copies blindly until a null byte is reached
+	-strncpy() is much safer
+-what stackprotector/sanitizeaddress do to protect the buffer
+-know what's happening on the stack
+
+week9 Multithreading:
+-probably have to make a sequential program multithreaded
+	-how to use pthread_create, pthread_join, pthread_exit to do this
+-know how to interpret the results of `time -p`
+	-user, sys, real times
+		-with multithreaded, user+sys > real 
+		-in single threaded, user+sys < real
+-when shell commands are piped to each other, buffers are setup in between them and they
+	can all work concurrently on multiple cores
+-threads don't share stacks and registers, they have their own
+	-they do share memory
+
+	
+Other notes:
+-Only languages to know will be Python, bash scripts, C
+	-about 50% of test will be on this
+-tests will be very similar to the labs
+	-print out slides and old code
+	
+
