@@ -6,7 +6,7 @@
 Class notes, PowerPoint slides, labs, and homeworks for each week.
 
 ###Note
-This is for educational and future references. Please don't copy and do your own work.
+This is for educational and future references. Please don't copy; do your own work.
 
 ###Scores
 Week | Topic
